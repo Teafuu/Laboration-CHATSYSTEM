@@ -67,3 +67,6 @@ if __name__ == '__main__':
         print('Message: {}'.format(msg))
 
         run_client(nick, receiver, msg)
+
+
+print("Testing")
