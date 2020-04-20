@@ -37,9 +37,9 @@ def run_client(nickname, send_to, msg):
         t.start()
 
     while True:
-        reciver = input('type receiver: ')
-        message = input('type message: ')
-        send_thread(s, reciver, message, state)
+        # receiver = input('type receiver: ')
+        message = input('')
+        send_thread(s, receiver, message, state)
 
     # state.running = False
     # stop = input("Press Enter to quit.\n")
@@ -57,14 +57,17 @@ def run_client(nickname, send_to, msg):
 if __name__ == '__main__':
     import sys
 
-    if len(sys.argv) < 4:
-        print('Must supply nickname, receiver and message!')
-    else:
-        nick, receiver, msg = sys.argv[1], sys.argv[2], ' '.join(sys.argv[3:])
+    # if len(sys.argv) < 4:
+    #     print('Must supply nickname, receiver and message!')
+    # else:
+    #     nick, receiver, msg = sys.argv[1], sys.argv[2], ' '.join(sys.argv[3:])
+    #
+    #     print('Nickname: {}'.format(nick))
+    #     print('Receiver: {}'.format(receiver))
+    #     print('Message: {}'.format(msg))
 
-        print('Nickname: {}'.format(nick))
-        print('Receiver: {}'.format(receiver))
-        print('Message: {}'.format(msg))
+    nick = input('Enter nick: ')
+    receiver = input('Enter receiver: ')
+    msg = ''
 
-        run_client(nick, receiver, msg)
-    print('Hej Kalle!')
+    run_client(nick, receiver, msg)
