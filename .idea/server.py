@@ -8,6 +8,7 @@ s.listen(QUEUE_SIZE)
 s.settimeout(TIMEOUT)
 state = ThreadState()
 
+channels = {'SYSAR': [], 'DISKOFIL': []}
 users = {}
 
 # TODO_: part 1
@@ -24,10 +25,28 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
     c_sock.settimeout(TIMEOUT)
 
     # Read the first message from the client # and use this as the nickname/username
+
     nick = read_buf(c_sock)
     user = User(nick, c_sock)
     users[nick] = user
     print('ALERT::User {} at {}'.format(nick, c_addr))
+
+    # for nick in channels['SYSAR']:
+    # for _usr in channels['SYSAR']:
+    users[nick].queue.append(('SERVER', nick + ' has joined'))
+        # send_buf(users[_usr].socket, 'SERVER', nick + ' has joined')
+
+
+    channels['SYSAR'].append((nick))
+
+    # users[nick].queue.append((nick, msg))
+
+    print('Choose channel(s):')
+    for key, value in channels.items():
+        users[nick].queue.append(('SERVER', key))
+
+
+    print(channels)
     while state.running and nick in users:
         # Read next message from client
         msg = read_buf(c_sock)
@@ -42,8 +61,9 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
         receiver, msg = msg[0], ' '.join(msg[1:])
 
         # Put message on receiver queue if receiver # is connected
-        if receiver in users:
-            users[receiver].queue.append((user.id, msg))
+        
+        # if receiver in users:
+        users[nick].queue.append((user.id, msg))
     c_sock.close()
 
 
@@ -58,8 +78,12 @@ def client_send(state):
             while len(queue) > 0:
                 sender, msg = queue.pop(0)
                 message = '{}> {}'.format(sender, msg)
+                print(message)
                 try:
-                    send_buf(users[nick].socket, message)
+                    for _usr in channels['SYSAR']:
+                        # if _usr != sender:
+                        print('should send')
+                        send_buf(users[_usr].socket, message)
                 except:
                     if nick not in disconnected_users:
                         disconnected_users.append(nick)

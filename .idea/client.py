@@ -21,7 +21,7 @@ def recv_thread(s, state):
     while state.running:
         msg = read_buf(s)
         if msg:
-            print(msg)
+            print('\n', msg)
 
 
 def run_client(nickname, send_to, msg):
@@ -39,6 +39,7 @@ def run_client(nickname, send_to, msg):
     while True:
         # receiver = input('type receiver: ')
         message = input('')
+        
         send_thread(s, receiver, message, state)
 
     # state.running = False
@@ -65,6 +66,7 @@ if __name__ == '__main__':
     #     print('Nickname: {}'.format(nick))
     #     print('Receiver: {}'.format(receiver))
     #     print('Message: {}'.format(msg))
+
 
     nick = input('Enter nick: ')
     receiver = input('Enter receiver: ')
