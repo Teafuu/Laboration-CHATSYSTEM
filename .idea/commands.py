@@ -25,7 +25,11 @@ def part_channel(user, channelName, channels, users):
     user.channel = None
 
 def change_nick(user, msg, channels, users):
-    print("NOT YET IMPLEMENTED")
+    server_alert(user, ['SERVER', user.id + ' has changed his nick to: ' + msg[1]], '')
+    users[msg[1]] = users.pop(user.id)
+    users[msg[1]].id = msg[1]
+    server_alert(user, ['SERVER', ' nick has been changed.'], '#')
+
 
 def list_channels(user, msg, channels, users):
     server_alert(user,['SERVER',channels], '#')
@@ -79,6 +83,6 @@ def check_operator(user, channel):
     server_alert(user, ['SERVER', 'Invalid permissions'], '#')
     return False
 
-def remove_operator(user, msg, channels, users):
+def quit_server(user, msg, channels, users):
     server_alert(user, ['SERVER', user.id + " has quit."])
     del users[user.id]

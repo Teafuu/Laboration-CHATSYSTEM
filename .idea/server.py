@@ -33,17 +33,12 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
     nick = read_buf(c_sock)
     user = objects.User(nick, c_sock)
     users[nick] = user
-    print('ALERT::User {} at {}'.format(nick, c_addr))
+    print('ALERT::User {} at {}'.format(user.id, c_addr))
 
-    users[nick].queue.append(('SERVER', nick + ' has joined'))
-
-    print('Choose channel(s):')
-    for key, value in channels.items():
-        users[nick].queue.append(('SERVER', key))
-
+    users[nick].queue.append(('SERVER', user.id + ' has joined'))
 
     print(channels)
-    while state.running and nick in users:
+    while state.running and user.id in users:
         # Read next message from client
         msg = read_buf(c_sock)
 
@@ -55,7 +50,7 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
         # Remaining words are message to send
         msg = msg.split(' ')
         receiver, msg = msg[0], ' '.join(msg[1:])
-        command_handle(nick,user, msg)
+        command_handle(user.id,user, msg)
     c_sock.close()
 
 
