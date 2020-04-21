@@ -1,6 +1,8 @@
 from base import *
 from config import *
 import socket, threading, time
+import commands
+import objects
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
@@ -8,38 +10,22 @@ s.listen(QUEUE_SIZE)
 s.settimeout(TIMEOUT)
 state = ThreadState()
 
-channels = {'SYSAR': [], 'DISKOFIL': []}
+channels = {}
 users = {}
-
-# TODO_: part 1
-class User:
-    def __init__(self, uid, sock):
-        self.id = uid
-        self.socket = sock
-        self.queue = []
-        self.connected = True
+commands = {'/join': commands.join_channel}
 
 
 # TODO_: part 1 & 2
 def client_handle(c_sock, c_addr, state):  # to be implemented
     c_sock.settimeout(TIMEOUT)
-
     # Read the first message from the client # and use this as the nickname/username
 
     nick = read_buf(c_sock)
-    user = User(nick, c_sock)
+    user = objects.User(nick, c_sock)
     users[nick] = user
     print('ALERT::User {} at {}'.format(nick, c_addr))
 
-    # for nick in channels['SYSAR']:
-    # for _usr in channels['SYSAR']:
     users[nick].queue.append(('SERVER', nick + ' has joined'))
-        # send_buf(users[_usr].socket, 'SERVER', nick + ' has joined')
-
-
-    channels['SYSAR'].append((nick))
-
-    # users[nick].queue.append((nick, msg))
 
     print('Choose channel(s):')
     for key, value in channels.items():
@@ -59,11 +45,7 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
         # Remaining words are message to send
         msg = msg.split(' ')
         receiver, msg = msg[0], ' '.join(msg[1:])
-
-        # Put message on receiver queue if receiver # is connected
-        
-        # if receiver in users:
-        users[nick].queue.append((user.id, msg))
+        command_handle(nick,user, msg)
     c_sock.close()
 
 
@@ -78,18 +60,28 @@ def client_send(state):
             while len(queue) > 0:
                 sender, msg = queue.pop(0)
                 message = '{}> {}'.format(sender, msg)
-                print(message)
                 try:
-                    for _usr in channels['SYSAR']:
-                        # if _usr != sender:
-                        print('should send')
-                        send_buf(users[_usr].socket, message)
+                    if "#" in message[0]: # private message
+                        send_buf(users[nick].socket, message)
+                    else: # public message
+                        for _usr in channels[users[nick].channel].members: # message to everyone
+                            if _usr.id != nick:
+                                send_buf(users[_usr.id].socket, message)
                 except:
                     if nick not in disconnected_users:
                         disconnected_users.append(nick)
-        for nick in disconnected_users:
-            print('ALERT::{} disconnected'.format(nick))
-            del users[nick]
+        #for nick in disconnected_users:
+        #    print('ALERT::{} disconnected'.format(nick))
+        #    del users[nick]
+
+def command_handle(nick,user, msg):
+    msg_list = msg.split(' ')
+    for command in commands:
+        if msg_list[0] == command:
+            commands[command](users[nick], msg_list, channels)
+            return
+        users[nick].queue.append((user.id, msg))
+
 
 
 

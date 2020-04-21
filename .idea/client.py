@@ -4,11 +4,9 @@ import socket, threading, time
 
 
 def send_thread(s, send_to, msg, state):
-    i = 0
     while state.running:
-        i += 1
         try:
-            message = '{} {} ({})'.format(send_to, msg, i)
+            message = '{} {}'.format(send_to, msg)
             send_buf(s, message)
             return
         except:
@@ -69,7 +67,7 @@ if __name__ == '__main__':
 
 
     nick = input('Enter nick: ')
-    receiver = input('Enter receiver: ')
+    receiver = ''
     msg = ''
 
     run_client(nick, receiver, msg)
