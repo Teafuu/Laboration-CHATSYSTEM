@@ -12,7 +12,17 @@ state = ThreadState()
 
 channels = {}
 users = {}
-commands = {'/join': commands.join_channel}
+commands = {'/join': commands.join_channel,
+            '/part' : commands.part_channel,
+            '/kick' : commands.kick_user,
+            '/list' : commands.list_users,
+            '/channels' : commands.list_channels,
+            '/w' : commands.whisper_user,
+            '/nick': commands.change_nick,
+            '/op' : commands.add_operator,
+            '/unop' : commands.remove_operator,
+            '/topic' : commands.change_topic,
+            '/quit' : commands.quit_server}
 
 
 # TODO_: part 1 & 2
@@ -78,11 +88,9 @@ def command_handle(nick,user, msg):
     msg_list = msg.split(' ')
     for command in commands:
         if msg_list[0] == command:
-            commands[command](users[nick], msg_list, channels)
+            commands[command](users[nick], msg_list, channels, users)
             return
-        users[nick].queue.append((user.id, msg))
-
-
+    users[nick].queue.append((user.id, msg))
 
 
 # TODO_: part 2.2

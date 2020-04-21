@@ -1,14 +1,15 @@
 class User:
     def __init__(self, uid, sock):
-        self.id = uid
-        self.socket = sock
-        self.queue = []
+        self.id = uid # nick namee
+        self.socket = sock # socket
+        self.queue = [] # messagee queue
         self.connected = True
-        self.channel = None
+        self.channel = None # channel name
 
 class Channel:
-    def __init__(self, channelName, _admin):
-        self.id = channelName
-        self.admin = _admin
-        self.members = [_admin]
-        self.operators = []
+    def __init__(self, channelName, user):
+        self.id = channelName # channel name
+        self.admin = user # current useradmin
+        self.members = [user] # user list
+        self.operators = [user] # operator list
+        self.topic = ""
