@@ -1,6 +1,6 @@
 # Laboration-CHATSYSTEM
 
-"""
+```
 Users är en dictionary med klassen User()
     def __init__(self, uid, sock):
         self.id = uid # nick name
@@ -30,4 +30,4 @@ users[nick] = är själva User instansen
 msg_list = medelandet som användare har skickat in som är splittar ['/w','argument1','hej',] etc..
 channels = dictionary för alla kanal instanser
 users = dictionary för alla user instanser.
-"""
+```
