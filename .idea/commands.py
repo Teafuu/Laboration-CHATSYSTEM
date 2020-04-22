@@ -19,10 +19,27 @@ def join_channel(user, msg, channels, users):
 def server_alert(user, msg, type = ''):
     user.queue.append((type + msg[0], msg[1]))
 
-def part_channel(user, channelName, channels, users):
-    server_alert(user, [user.id, ' left.'], '#')
-    channels[user.channel].members.remove(user)
-    user.channel = None
+def part_channel(user, msg, channels, users):
+    if user in channels[user.channel].operators:
+        channels[user.channel].operators.remove(user)
+        if user == channels[user.channel].admin:
+            if len(channels[user.channel].members) <= 1:
+                server_alert(user, [user.id, ' server removed.'], '#')
+                channels[user.channel].members.remove(user)
+                channels.pop(user.channel)
+                user.channel = None
+            else:
+                for _usr in channels[user.channel].members:
+                    if _usr != user:
+                        channels[_usr.channel].admin = _usr
+                        channels[_usr.channel].operators.append(_usr)
+                        server_alert(_usr, [user.id, ' you are now administartor.'], '#')
+                        channels[user.channel].members.remove(user)
+                        user.channel = None
+    else:
+        server_alert(user, [user.id, ' left.'], '#')
+        channels[user.channel].members.remove(user)
+        user.channel = None
 
 def change_nick(user, msg, channels, users):
     server_alert(user, ['SERVER', user.id + ' has changed his nick to: ' + msg[1]], '')
@@ -32,17 +49,17 @@ def change_nick(user, msg, channels, users):
 
 
 def list_channels(user, msg, channels, users):
-    server_alert(user,['SERVER',channels], '#')
+    server_alert(user,['SERVER',channels.keys()], '#')
 
 def list_users(user, msg, channels, users):
-    if user.channel != none:
+    if user.channel is not one:
         server_alert(user,['SERVER',channels[user.channel].members], '#')
 
 def kick_user(user, msg, channels, users):
     receiver, msg = msg[1], ' '.join(msg[2:])
-    if check_operator(user, channels[user.channel]):
-        for u in channels[user.channel].members:
-            if receiver == u.id:
+    if check_operator(user, channels[user.channel]): # check permission
+        for u in channels[user.channel].members: # iterate through everyone in the channel
+            if receiver == u.id and users[receiver] != channels[user.channel].admin: # removes user from appropriate channel
                 channels[user.channel].members.remove(users[receiver])
                 server_alert(users[receiver], ['SERVER', receiver + 'has been kicked'])
                 server_alert(users[receiver], [user.id, msg], '#')

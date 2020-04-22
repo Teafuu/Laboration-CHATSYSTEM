@@ -5,14 +5,14 @@ import socket, threading, time
 
 def send_thread(s, send_to, msg, state):
     while state.running:
-      #   try:
+         try:
             message = '{} {}'.format(send_to, msg)
             send_buf(s, message)
             return
-     #    except:
-            # print("Lost connection to server.")
-            # state.running = False
-       #  time.sleep(5)
+         except:
+             print("Lost connection to server.")
+             state.running = False
+         time.sleep(5)
 
 
 def recv_thread(s, state):
