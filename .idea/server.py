@@ -12,17 +12,6 @@ state = ThreadState()
 
 channels = {}
 users = {}
-commands = {'/join': commands.join_channel,
-            '/part' : commands.part_channel,
-            '/kick' : commands.kick_user,
-            '/list' : commands.list_users,
-            '/channels' : commands.list_channels,
-            '/w' : commands.whisper_user,
-            '/nick': commands.change_nick,
-            '/op' : commands.add_operator,
-            '/unop' : commands.remove_operator,
-            '/topic' : commands.change_topic,
-            '/quit' : commands.quit_server}
 
 
 # TODO_: part 1 & 2
@@ -39,7 +28,6 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
 
     print(channels)
     while state.running and user.id in users:
-        # Read next message from client
         msg = read_buf(c_sock)
 
         # If msg is empty, try again
@@ -81,9 +69,9 @@ def client_send(state):
 
 def command_handle(nick,user, msg):
     msg_list = msg.split(' ')
-    for command in commands:
+    for command in commands.commands:
         if msg_list[0] == command:
-            commands[command](users[nick], msg_list, channels, users)
+            commands.commands[command](users[nick], msg_list, channels, users)
             return
     users[nick].queue.append((user.id, msg))
 

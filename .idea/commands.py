@@ -52,8 +52,15 @@ def list_channels(user, msg, channels, users):
     server_alert(user,['SERVER',channels.keys()], '#')
 
 def list_users(user, msg, channels, users):
-    if user.channel is not one:
+    if user.channel is not None:
         server_alert(user,['SERVER',channels[user.channel].members], '#')
+
+def list_commands(user, msg, channels, users):
+    msg_to_send = "\n"
+    for command in commands:
+        msg_to_send += command + "\n"
+    server_alert(user,['SERVER', msg_to_send], '#')
+
 
 def kick_user(user, msg, channels, users):
     receiver, msg = msg[1], ' '.join(msg[2:])
@@ -103,3 +110,16 @@ def check_operator(user, channel):
 def quit_server(user, msg, channels, users):
     server_alert(user, ['SERVER', user.id + " has quit."])
     del users[user.id]
+
+commands = {'/help' : list_commands,
+            '/join': join_channel,
+            '/part' : part_channel,
+            '/kick' : kick_user,
+            '/list' : list_users,
+            '/channels' : list_channels,
+            '/w' : whisper_user,
+            '/nick': change_nick,
+            '/op' : add_operator,
+            '/unop' : remove_operator,
+            '/topic' : change_topic,
+            '/quit' : quit_server}
