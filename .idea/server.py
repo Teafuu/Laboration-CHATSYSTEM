@@ -21,12 +21,18 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
 
     nick = read_buf(c_sock)
     user = objects.User(nick, c_sock)
-    users[nick] = user
-    print('ALERT::User {} at {}'.format(user.id, c_addr))
-    users[nick].queue.append(('SERVER', user.id + ' has joined'))
 
-    print(channels)
-    while state.running and user.id in users:
+    if nick not in users:
+        users[nick] = user
+        send_buf(user.socket, "#SERVER you are connected!")
+
+    else:
+        send_buf(user.socket, "#SERVER nick taken, use /nick [name] to reconnect.")
+
+    print('ALERT::User {} at {}'.format(user.id, c_addr))
+    user.queue.append(('SERVER', user.id + ' has joined'))
+
+    while state.running and user.connected:
         msg = read_buf(c_sock)
 
         # If msg is empty, try again
@@ -63,16 +69,22 @@ def client_send(state):
                     if nick not in disconnected_users:
                         disconnected_users.append(nick)
         #for nick in disconnected_users:
-        #    print('ALERT::{} disconnected'.format(nick))
-        #    del users[nick]
+         #   print('ALERT::{} disconnected'.format(nick))
+          #  del users[nick]
 
 def command_handle(nick,user, msg):
     msg_list = msg.split(' ')
-    for command in commands.commands:
-        if msg_list[0] == command:
-            commands.commands[command](users[nick], msg_list, channels, users)
-            return
-    users[nick].queue.append((user.id, msg))
+    if nick in users and user is not users[nick]:
+        if len(msg_list) > 1 and msg_list[0] == "/nick":
+            users[msg_list[1]] = user
+            user.id = msg_list[1]
+            send_buf(user.socket, "#SERVER you are connected!")
+    else:
+        for command in commands.commands:
+            if msg_list[0] == command:
+                commands.commands[command](users[nick], msg_list, channels, users)
+                return
+        users[nick].queue.append((user.id, msg))
 
 
 # TODO_: part 2.2

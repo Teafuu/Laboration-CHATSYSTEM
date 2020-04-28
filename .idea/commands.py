@@ -109,6 +109,7 @@ def check_operator(user, channel):
 
 def quit_server(user, msg, channels, users):
     server_alert(user, ['SERVER', user.id + " has quit."])
+    users[user.id].connected = False
     del users[user.id]
 
 commands = {'/help' : list_commands,
