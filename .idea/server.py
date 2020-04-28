@@ -23,7 +23,6 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
     user = objects.User(nick, c_sock)
     users[nick] = user
     print('ALERT::User {} at {}'.format(user.id, c_addr))
-
     users[nick].queue.append(('SERVER', user.id + ' has joined'))
 
     print(channels)
