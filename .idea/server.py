@@ -25,13 +25,9 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
     if nick not in users:
         users[nick] = user
         send_buf(user.socket, "#SERVER you are connected!")
-
-    else:
-        send_buf(user.socket, "#SERVER nick taken, use /nick [name] to reconnect.")
+    else: send_buf(user.socket, "#SERVER nick taken, use /nick [name] to reconnect.")
 
     print('ALERT::User {} at {}'.format(user.id, c_addr))
-    user.queue.append(('SERVER', user.id + ' has joined'))
-
     while state.running and user.connected:
         msg = read_buf(c_sock)
 
