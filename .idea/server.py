@@ -1,3 +1,5 @@
+# Coding: utf8
+
 from base import *
 from config import *
 import socket, threading, time
@@ -25,7 +27,8 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
     if nick not in users:
         users[nick] = user
         send_buf(user.socket, "#SERVER you are connected!")
-    else: send_buf(user.socket, "#SERVER nick taken, use /nick [name] to reconnect.")
+    else:
+        send_buf(user.socket, "#SERVER nick taken, use /nick [name] to reconnect.")
 
     print('ALERT::User {} at {}'.format(user.id, c_addr))
     while state.running and user.connected:
@@ -39,7 +42,7 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
         # Remaining words are message to send
         msg = msg.split(' ')
         receiver, msg = msg[0], ' '.join(msg[1:])
-        command_handle(user.id,user, msg)
+        command_handle(user.id, user, msg)
     c_sock.close()
 
 
@@ -51,16 +54,20 @@ def client_send(state):
         time.sleep(0.05)
         for nick in users:
             nick, queue = nick, users[nick].queue
+            if queue:
+                print('this is queue:', queue)
             while len(queue) > 0:
                 sender, msg = queue.pop(0)
                 message = '{}> {}'.format(sender, msg)
                 try:
-                    if "#" in message[0]: # private message
+                    if ":" in message[0]: # private message
                         send_buf(users[nick].socket, message)
-                    else: # public message
-                        for _usr in channels[users[nick].channel].members: # message to everyone
-                            if _usr.id != nick:
-                                send_buf(users[_usr.id].socket, message)
+                    else: # channel message
+                        print(message)
+                        print(message.split()[0][1:])
+                        for _usr in channels[message.split(' ')[0][1:]].members: # message to everyone
+                            # if _usr.id != nick:
+                            send_buf(users[_usr.id].socket, message)
                 except:
                     if nick not in disconnected_users:
                         disconnected_users.append(nick)
@@ -68,7 +75,7 @@ def client_send(state):
          #   print('ALERT::{} disconnected'.format(nick))
           #  del users[nick]
 
-def command_handle(nick,user, msg):
+def command_handle(nick, user, msg):
     msg_list = msg.split(' ')
     if nick in users and user is not users[nick]:
         if len(msg_list) > 1 and msg_list[0] == "/nick":

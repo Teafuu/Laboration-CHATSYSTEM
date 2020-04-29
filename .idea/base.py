@@ -8,6 +8,7 @@ class ThreadState:
 
 def send_buf(socket, message):
     msg_len = str(len(message)).rjust(HEADER_SIZE, '0')
+    print(msg_len)
     socket.send(msg_len.encode())
     socket.send(message.encode())
 

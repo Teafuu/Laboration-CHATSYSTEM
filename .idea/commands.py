@@ -1,20 +1,21 @@
 import objects
 
 def join_channel(user, msg, channels, users):
-    if user.channel is not None:  # implement hierarchy operator check, add alert for leaving
-        part_channel(user, msg, channels, users)
+    # if user.channel is not None:  # implement hierarchy operator check, add alert for leaving
+        # part_channel(user, msg, channels, users)
 
     for channel in channels: # checking if existing channel
         if msg[1] in channel: # joining existing channel
-            user.channel = msg[1]
+            user.channel.append(msg[1])
             channels[msg[1]].members.append(user)
-            server_alert(user, ["SERVER", ' MOTD: ' + channels[msg[1]].topic],'#')
+            server_alert(user, ["SERVER", ' MOTD: ' + channels[msg[1]].topic],':')
             server_alert(user, [user.id, ' joined.'])
             return
     # create new chnnael
-    server_alert(user,['SERVER','channel has been created.'], '#')
+    server_alert(user,['SERVER','channel has been created.'], ':')
     channels[msg[1]] = objects.Channel(msg[1], user)
-    user.channel = msg[1]
+    user.channel.append(msg[1])
+
 
 def server_alert(user, msg, type = ''):
     user.queue.append((type + msg[0], msg[1]))
@@ -79,9 +80,12 @@ def kick_user(user, msg, channels, users):
 def whisper_user(user, msg, channels, users):
     receiver, msg = msg[1], ' '.join(msg[2:])
 
-    for u in users:
-        if receiver == u:  # If user doesn't exist
-            server_alert(users[receiver], [user.id, msg], '#')
+    if receiver[0] == '#' and receiver[1:] in user.channel:
+        server_alert(user, [receiver + ' ' + user.id, msg])
+        return
+    else:
+        if receiver in users:
+            server_alert(users[receiver], [user.id, msg], ':')
             return
 
 def change_topic(user, msg, channels, users):
