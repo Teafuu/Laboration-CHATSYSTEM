@@ -63,11 +63,9 @@ def client_send(state):
                     if ":" in message[0]: # private message
                         send_buf(users[nick].socket, message)
                     else: # channel message
-                        print(message)
-                        print(message.split()[0][1:])
                         for _usr in channels[message.split(' ')[0][1:]].members: # message to everyone
-                            # if _usr.id != nick:
-                            send_buf(users[_usr.id].socket, message)
+                            if _usr.id != nick:
+                                send_buf(users[_usr.id].socket, message)
                 except:
                     if nick not in disconnected_users:
                         disconnected_users.append(nick)
@@ -85,7 +83,7 @@ def command_handle(nick, user, msg):
     else:
         for command in commands.commands:
             if msg_list[0] == command:
-                commands.commands[command](users[nick], msg_list, channels, users)
+                commands.commands[command][0](users[nick], msg_list, channels, users)
                 return
         users[nick].queue.append((user.id, msg))
 

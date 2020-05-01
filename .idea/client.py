@@ -1,6 +1,7 @@
 from base import *
 from config import *
 import socket, threading, time
+import winsound
 
 
 def send_thread(s, send_to, msg, state):
@@ -19,6 +20,8 @@ def recv_thread(s, state):
     while state.running:
         msg = read_buf(s)
         if msg:
+            winsound.Beep(100, 100)
+            winsound.Beep(100, 200)
             print('\n', msg)
 
 
@@ -64,8 +67,7 @@ if __name__ == '__main__':
     #     print('Nickname: {}'.format(nick))
     #     print('Receiver: {}'.format(receiver))
     #     print('Message: {}'.format(msg))
-
-
+    HOST = input("Enter IP: ")
     nick = input('Enter nick: ')
     receiver = ''
     msg = ''

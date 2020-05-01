@@ -7,10 +7,10 @@ class ThreadState:
 
 
 def send_buf(socket, message):
-    msg_len = str(len(message)).rjust(HEADER_SIZE, '0')
-    print(msg_len)
+    msg_to_send = message.encode()
+    msg_len = str(len(msg_to_send)).rjust(HEADER_SIZE, '0')
     socket.send(msg_len.encode())
-    socket.send(message.encode())
+    socket.send(msg_to_send)
 
 
 def read_buf(socket):
