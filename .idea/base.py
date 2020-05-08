@@ -21,5 +21,3 @@ def read_buf(socket):
             return data if data else None
         except:
             return None
-
-

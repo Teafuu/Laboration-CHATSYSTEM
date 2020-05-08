@@ -1,8 +1,8 @@
 from base import *
 from config import *
 import socket, threading, time
-import winsound
-
+# import winsound
+import sys  # winsound för mac
 
 def send_thread(s, send_to, msg, state):
     while state.running:
@@ -20,8 +20,9 @@ def recv_thread(s, state):
     while state.running:
         msg = read_buf(s)
         if msg:
-            winsound.Beep(100, 100)
-            winsound.Beep(100, 200)
+            # winsound.Beep(100, 100)
+            # winsound.Beep(100, 200)
+            sys.stdout.write('\a')
             print('\n', msg)
 
 

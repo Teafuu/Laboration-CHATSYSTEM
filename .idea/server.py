@@ -53,9 +53,10 @@ def client_send(state):
         disconnected_users = []
         time.sleep(0.05)
         for nick in users:
-            nick, queue = nick, users[nick].queue
+            # nick, queue = nick, users[nick].queue
+            queue = users[nick].queue
             if queue:
-                print('this is queue:', queue)
+                print('this is queue (client_send):', queue)
             while len(queue) > 0:
                 sender, msg = queue.pop(0)
                 message = '{}> {}'.format(sender, msg)
@@ -79,14 +80,19 @@ def command_handle(nick, user, msg):
         if len(msg_list) > 1 and msg_list[0] == "/nick":
             users[msg_list[1]] = user
             user.id = msg_list[1]
-            send_buf(user.socket, "#SERVER you are connected!")
+            send_buf(user.socket, ":SERVER you are connected!\n")
     else:
-        for command in commands.commands:
-            if msg_list[0] == command:
-                commands.commands[command][0](users[nick], msg_list, channels, users)
-                return
+        # for command in commands.commands:
+        #     if msg_list[0] == command:
+        #         commands.commands[command][0](users[nick], msg_list, channels, users)
+        #         return
+        # users[nick].queue.append((user.id, msg))
+        print('command:', msg_list[0])  # command - ta bort sen
+        if msg_list[0] in commands.commands:
+            commands.commands[msg_list[0]][0](users[nick], msg_list, channels, users)
+            return
         users[nick].queue.append((user.id, msg))
-
+        print(nick, users[nick])  # user-obj  - ta bort
 
 # TODO_: part 2.2
 def ping_thread(state):
