@@ -21,7 +21,7 @@ users = {}
 def client_handle(c_sock, c_addr, state):  # to be implemented
     c_sock.settimeout(TIMEOUT)
     # Read the first message from the client # and use this as the nickname/username
-
+    print("CONNECTION")
     nick = read_buf(c_sock)
     user = objects.User(nick, c_sock)
 
@@ -34,6 +34,7 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
     print('ALERT::User {} at {}'.format(user.id, c_addr))
     while state.running and user.connected:
         msg = read_buf(c_sock)
+        user.attempts = 0
         if not msg:
             continue
         command_handle(user.id, user, msg)
@@ -41,20 +42,19 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
 
 
 def command_handle(nick, user, msg):
-    msg = msg.replace('\n', '')
+    msg = msg.replace('\n','')
     msg_list = msg.split(':')
-    print('msg:', msg)
-    print('msg_list:', msg_list)
     if msg_list:
         if nick in users and user is not users[nick]:
-            if len(msg_list) > 1 and msg_list[0] == "/nick":
+            if len(msg_list) > 1 and msg_list[0] == "nick":
                 users[msg_list[1]] = user
                 user.id = msg_list[1]
                 send_buf(user.socket, "#SERVER you are connected!")
         else:
-            for cmd in commands.commands:
-                if msg_list[0] == cmd:
-                    commands.commands[cmd][0](users[nick], msg_list, channels, users)
+            for command in commands.commands:
+                if msg_list[0] == command:
+                    print("should run a beautiful function")
+                    commands.commands[command][0](users[nick], msg_list, channels, users)
                     return
             users[nick].queue.append((user.id, msg))
 
@@ -80,21 +80,23 @@ def client_send(state):
                             if _usr.id != nick:
                                 send_buf(users[_usr.id].socket, message)
                 except:
-                    pass
-      #   for nick in disconnected_users:
-        #     print('ALERT::{} disconnected'.format(nick))
-          #   users[nick].c.close()
-            # del users[nick]
+                    if users[nick].attempts < 10:
+                        users[nick].attempts += 1
+                    else:
+                        disconnected_users.append(users[nick])
+        for nick in disconnected_users:
+            print('ALERT::{} disconnected'.format(nick))
+            users[nick].c.close()
+            del users[nick]
 
 
 # TODO_: part 2.2
 def ping_thread(state):
     """Send PING message to users every PING_FREQ seconds"""
-    # while state.running:
-    #     time.sleep(PING_FREQ)
-    #     for nick in users:
-    #         users[nick].queue.append(('SERVER', 'PING'))
-    pass
+    while state.running:
+        time.sleep(PING_FREQ)
+        for nick in users:
+            users[nick].queue.append(('SERVER', 'PING'))
 
 
 def input_thread(state):
