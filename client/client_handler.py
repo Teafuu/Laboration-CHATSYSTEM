@@ -18,6 +18,7 @@ def format_check(msg):
             print('format check parsed_msg:', parsed_msg)
             return True, parsed_msg
     print('Syntax error!')
+    return False, None
 
 
 class Client:
