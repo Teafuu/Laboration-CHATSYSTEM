@@ -1,11 +1,12 @@
-import objects
+from server import objects
+
 
 def join_channel(user, msg, channels, users): # doesn't like spaced channels
     for channel in channels: # checking if existing channel
         if msg[1] in channel: # joining existing channel
             if msg[1] in user.channel:
                 return
-            user.channel.append(msg[1])
+            user.channel.append(msg[1]  )
             channels[msg[1]].members.append(user)
             server_alert(user, ["SERVER", ' MOTD: ' + channels[msg[1]].topic],':')
             server_alert(user, ['SERVER', user.id + ' joined.'], ('#' + msg[1] + " "))
@@ -19,7 +20,8 @@ def join_channel(user, msg, channels, users): # doesn't like spaced channels
 def server_alert(user, msg, type = ''):
     user.queue.append((type + msg[0], msg[1]))
 
-def part_channel(user, msg, channels, users): # need to fix
+
+def part_channel(user, msg, channels, users):
     if message_param_check(user, msg, 2):
         if msg[1] in user.channel:
             leave_channel(user, msg[1], channels)
@@ -50,10 +52,14 @@ def leave_channel(user, channelName, channels):
 
 
 def change_nick(user, msg, channels, users):
-    server_alert(user, ['SERVER', user.id + ' has changed his nick to: ' + msg[1]], ('#' + channelName + " "))
-    users[msg[1]] = users.pop(user.id)
-    users[msg[1]].id = msg[1]
-    server_alert(user, ['SERVER', ' nick has been changed.'], ':')
+    if msg[1] in users:
+        server_alert(user, ['SERVER', ' nick taken.'], ':')
+    else:
+        for channelName in user.channel:
+            server_alert(user, ['SERVER', user.id + ' has changed his nick to: ' + msg[1]], ('#' + channelName + " "))
+        users[msg[1]] = users.pop(user.id)
+        users[msg[1]].id = msg[1]
+        server_alert(user, ['SERVER', ' nick has been changed.'], ':')
 
 
 def list_channels(user, msg, channels, users):
@@ -65,12 +71,13 @@ def list_users(user, msg, channels, users):
             if channel_exists(channels, msg[1], user):
                 server_alert(user,['SERVER',channels[msg[1]].members], ':')
 
+
 def list_commands(user, msg, channels, users):
+    print("is running\n")
     msg_to_send = "\n"
     for command in commands:
         msg_to_send += command +" " + commands[command][1] + "\n"
     server_alert(user,['SERVER', msg_to_send], ':')
-
 
 def kick_user(user, msg, channels, users):
     if message_param_check(user, msg, 3):
@@ -85,7 +92,6 @@ def kick_user(user, msg, channels, users):
                         users[receiver].channel.remove(channelName)
                         return
                 server_alert(user, ['SERVER', 'User does not exist'], ':')
-
 
 def whisper_user(user, msg, channels, users):
     if message_param_check(user, msg, 2):
@@ -139,25 +145,31 @@ def channel_exists(channels, channelName, user):
         return True
     server_alert(user, ['SERVER', 'channel does not exist.'], ':')
     return False
+
 def message_param_check(user, msg, limit):
     if len(msg) < limit:
         server_alert(user, ['SERVER', 'Invalid parameters'], ':')
         return False
     return True
+
 def display_user_channels(user, msg, channels, users):
     server_alert(user, ['SERVER', user.channel], ':')
 
+def display_online_users(user, msg, channels, users):
+    server_alert(user, ['SERVER', users.keys()], ':')
 
-commands = {'/help' : (list_commands,"Commands"),
-            '/join': (join_channel, "[Channel Name]"),
-            '/part' : (part_channel, "[Channel Name"),
-            '/kick' : (kick_user,"[Server] [Nickname]"),
-            '/list' : (list_users,"[Server]"),
-            '/channels' : (list_channels,"Displays all servers"),
-            '/w' : (whisper_user,"#[Server] or [Nickname] + [message]"),
-            '/nick': (change_nick,"[New Nickname"),
-            '/op' : (add_operator,"[Server] [Nickname]"),
-            '/unop' : (remove_operator,"[Server] [Nickname]"),
-            '/topic' : (change_topic,"[Server] [Topic]"),
-            '/quit' : (quit_server,"Quits application"),
-            '/joined' : (display_user_channels,"Displays your servers")}
+
+commands = {'help' : (list_commands,"Commands"),
+            'join': (join_channel, "[Channel Name]"),
+            'part' : (part_channel, "[Channel Name"),
+            'kick' : (kick_user,"[Server] [Nickname]"),
+            'list' : (list_users,"[Server]"),
+            'channels' : (list_channels,"Displays all servers"),
+            'w' : (whisper_user,"#[Server] or [Nickname] + [message]"),
+            'nick': (change_nick,"[New Nickname"),
+            'op' : (add_operator,"[Server] [Nickname]"),
+            'unop' : (remove_operator,"[Server] [Nickname]"),
+            'topic' : (change_topic,"[Server] [Topic]"),
+            'quit' : (quit_server,"Quits application"),
+            'joined' : (display_user_channels,"Displays your servers"),
+            'online' : (display_online_users, "Displays all users")}

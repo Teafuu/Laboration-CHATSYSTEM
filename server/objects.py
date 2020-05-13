@@ -6,6 +6,7 @@ class User:
         self.connected = True
         self.channel = [] # channel name
 
+
 class Channel:
     def __init__(self, channelName, user):
         self.id = channelName # channel name

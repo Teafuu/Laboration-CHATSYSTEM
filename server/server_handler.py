@@ -1,11 +1,12 @@
 # Coding: utf8
 
-from base import *
-from config import *
+from utils.base import *
+from utils.config import *
 import socket, threading, time
-import commands
-import objects
+from server import commands
+from server import objects
 
+HOST = input("Host IP: ")
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(QUEUE_SIZE)
@@ -33,15 +34,8 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
     print('ALERT::User {} at {}'.format(user.id, c_addr))
     while state.running and user.connected:
         msg = read_buf(c_sock)
-
-        # If msg is empty, try again
         if not msg:
             continue
-
-        # First word in message is the receiver
-        # Remaining words are message to send
-        msg = msg.split(' ')
-        receiver, msg = msg[0], ' '.join(msg[1:])
         command_handle(user.id, user, msg)
     c_sock.close()
 
@@ -53,7 +47,7 @@ def client_send(state):
         disconnected_users = []
         time.sleep(0.05)
         for nick in users:
-            nick, queue = nick, users[nick].queue
+            queue = users[nick].queue
             if queue:
                 print('this is queue:', queue)
             while len(queue) > 0:
@@ -63,18 +57,21 @@ def client_send(state):
                     if ":" in message[0]: # private message
                         send_buf(users[nick].socket, message)
                     else: # channel message
-                        for _usr in channels[message.split(' ')[0][1:]].members: # message to everyone
+                        for _usr in channels[message.split(' ')[0][1:]].members: # message      to everyone
                             if _usr.id != nick:
                                 send_buf(users[_usr.id].socket, message)
                 except:
-                    if nick not in disconnected_users:
-                        disconnected_users.append(nick)
-        #for nick in disconnected_users:
-         #   print('ALERT::{} disconnected'.format(nick))
-          #  del users[nick]
+                    pass
+        for nick in disconnected_users:
+            print('ALERT::{} disconnected'.format(nick))
+            users[nick].c.close()
+            del users[nick]
+
 
 def command_handle(nick, user, msg):
-    msg_list = msg.split(' ')
+    msg = msg.replace('\n','')
+    msg_list = msg.split()
+
     if nick in users and user is not users[nick]:
         if len(msg_list) > 1 and msg_list[0] == "/nick":
             users[msg_list[1]] = user
@@ -93,8 +90,8 @@ def ping_thread(state):
     """Send PING message to users every PING_FREQ seconds"""
     while state.running:
         time.sleep(PING_FREQ)
-        # for nick in users:
-            # users[nick].queue.append(('SERVER', 'PING'))
+        for nick in users:
+            users[nick].queue.append(('SERVER', 'PING'))
 
 
 def input_thread(state):

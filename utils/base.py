@@ -1,5 +1,4 @@
-from config import HEADER_SIZE
-
+from utils.config import HEADER_SIZE
 
 class ThreadState:
     def __init__(self):
@@ -9,6 +8,7 @@ class ThreadState:
 def send_buf(socket, message):
     msg_to_send = message.encode()
     msg_len = str(len(msg_to_send)).rjust(HEADER_SIZE, '0')
+
     socket.send(msg_len.encode())
     socket.send(msg_to_send)
 
@@ -21,5 +21,4 @@ def read_buf(socket):
             return data if data else None
         except:
             return None
-
 
