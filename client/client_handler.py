@@ -15,10 +15,29 @@ def format_check(msg):
         if cmd in commands and len(para) == commands.get(cmd):
             _msg = msg.split()
             parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
-            print('format check parsed_msg:', parsed_msg)
+            print('parse:', parsed_msg)
             return True, parsed_msg
-    print('Syntax error!')
+        elif (cmd == '/msg' or cmd == '/topic') and len(para) > commands[cmd]:
+            _msg = msg.split()
+            parsed_msg = ':'.join([_msg[0][1:]] + _msg[commands[cmd]-1:])
+            print('msg/topic parse:', parsed_msg)
+            return True, parsed_msg
+        elif cmd == '/kick' and len(para) > commands[cmd]:
+            _msg = msg.split()
+            parsed_msg = ':'.join([_msg[0][1:]] + _msg[commands[cmd]-1:])
+            print('kick parse:', parsed_msg)
+            return True, parsed_msg
     return False, None
+
+    # if len(msg.split()) > 0:
+    #     cmd, para = msg.split()[0], msg.split()[1:]
+    #     if cmd in commands and len(para) == commands.get(cmd):
+    #         _msg = msg.split()
+    #         parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
+    #         print('format check parsed_msg:', parsed_msg)
+    #         return True, parsed_msg
+    # print('Syntax error!')
+    # return False, None
 
 
 class Client:
@@ -71,16 +90,14 @@ class Client:
     def run(self):
         while True:
             msg = input('>> ')
-            # if msg != '\n' and msg != '' and format_check(msg):
             check, parsed_msg = format_check(msg)
-            # if format_check(msg):
             if check:
-                # _msg = msg.split()
-                # parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
-                print('run parsed_msg:', parsed_msg)
                 self.send_thread(parsed_msg)
+            else:
+                print('Syntax error!')
 
 
-name = input('enter name: ')
-myClient = Client(name, "127.0.0.1")
-myClient.run()
+if __name__ == '__main__':
+    name = input('enter name: ')
+    myClient = Client(name, "127.0.0.1")
+    myClient.run()

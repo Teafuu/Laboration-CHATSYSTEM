@@ -73,10 +73,10 @@ def client_send(state):
                 sender, msg = queue.pop(0)
                 message = '{}> {}'.format(sender, msg)
                 try:
-                    if ":" in message[0]: # private message
+                    if ":" in message[0]:  # private message
                         send_buf(users[nick].socket, message)
-                    else: # channel message
-                        for _usr in channels[message.split(' ')[0][1:]].members: # message      to everyone
+                    else:  # channel message
+                        for _usr in channels[message.split(' ')[0][1:]].members:  # message to everyone
                             if _usr.id != nick:
                                 send_buf(users[_usr.id].socket, message)
                 except:
