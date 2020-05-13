@@ -41,20 +41,22 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
 
 
 def command_handle(nick, user, msg):
-    msg = msg.replace('\n','')
-    msg_list = msg.split()
-
-    if nick in users and user is not users[nick]:
-        if len(msg_list) > 1 and msg_list[0] == "/nick":
-            users[msg_list[1]] = user
-            user.id = msg_list[1]
-            send_buf(user.socket, "#SERVER you are connected!")
-    else:
-        for command in commands.commands:
-            if msg_list[0] == command:
-                commands.commands[command][0](users[nick], msg_list, channels, users)
-                return
-        users[nick].queue.append((user.id, msg))
+    msg = msg.replace('\n', '')
+    msg_list = msg.split(':')
+    print('msg:', msg)
+    print('msg_list:', msg_list)
+    if msg_list:
+        if nick in users and user is not users[nick]:
+            if len(msg_list) > 1 and msg_list[0] == "/nick":
+                users[msg_list[1]] = user
+                user.id = msg_list[1]
+                send_buf(user.socket, "#SERVER you are connected!")
+        else:
+            for cmd in commands.commands:
+                if msg_list[0] == cmd:
+                    commands.commands[cmd][0](users[nick], msg_list, channels, users)
+                    return
+            users[nick].queue.append((user.id, msg))
 
 
 # TODO_: part 2.1
@@ -88,10 +90,11 @@ def client_send(state):
 # TODO_: part 2.2
 def ping_thread(state):
     """Send PING message to users every PING_FREQ seconds"""
-    while state.running:
-        time.sleep(PING_FREQ)
-        for nick in users:
-            users[nick].queue.append(('SERVER', 'PING'))
+    # while state.running:
+    #     time.sleep(PING_FREQ)
+    #     for nick in users:
+    #         users[nick].queue.append(('SERVER', 'PING'))
+    pass
 
 
 def input_thread(state):

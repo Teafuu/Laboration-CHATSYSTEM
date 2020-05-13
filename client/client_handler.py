@@ -1,7 +1,20 @@
 from utils.base import *
 from utils.config import *
+
 import socket, threading, time
-import winsound
+
+# import winsound
+
+commands = {'/help': 0, '/join': 1, '/part': 1, '/kick': 3, '/list': 1, '/channels': 0, '/msg': 2,
+            '/nick': 1, '/op': 2, '/unop': 2, '/topic': 2, '/quit': 0, '/joined': 0}
+
+
+def format_check(msg):
+    if len(msg.split()) > 0:
+        cmd, para = msg.split()[0], msg.split()[1:]
+        if cmd in commands and len(para) == commands.get(cmd):
+            return True
+    print('Syntax error!')
 
 
 class Client:
@@ -28,6 +41,8 @@ class Client:
                 if _msg:
                     send_buf(self.s, _msg)
                 return
+                    # else:
+                    #     print('Syntax error!')
             except:
                 self.state.running = False
             time.sleep(5)
@@ -36,8 +51,8 @@ class Client:
         while self.state.running:
             msg = read_buf(self.s)
             if msg:
-                winsound.Beep(100, 100)
-                winsound.Beep(100, 200)
+                # winsound.Beep(100, 100)
+                # winsound.Beep(100, 200)
 
                 if self.interface:
                     self.interface.receive_message(msg)
@@ -51,10 +66,15 @@ class Client:
 
     def run(self):
         while True:
-            _msg = input()
-            self.send_thread(_msg)
+            msg = input('>> ')
+            # if msg != '\n' and msg != '' and format_check(msg):
+            if format_check(msg):
+                _msg = msg.split()
+                parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
+                print('parsed_msg:', parsed_msg)
+                self.send_thread(parsed_msg)
 
 
-myClient = Client("Max", "127.0.0.1")
+name = input('enter name: ')
+myClient = Client(name, "127.0.0.1")
 myClient.run()
-
