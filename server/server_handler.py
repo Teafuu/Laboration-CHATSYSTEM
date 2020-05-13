@@ -40,6 +40,23 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
     c_sock.close()
 
 
+def command_handle(nick, user, msg):
+    msg = msg.replace('\n','')
+    msg_list = msg.split()
+
+    if nick in users and user is not users[nick]:
+        if len(msg_list) > 1 and msg_list[0] == "/nick":
+            users[msg_list[1]] = user
+            user.id = msg_list[1]
+            send_buf(user.socket, "#SERVER you are connected!")
+    else:
+        for command in commands.commands:
+            if msg_list[0] == command:
+                commands.commands[command][0](users[nick], msg_list, channels, users)
+                return
+        users[nick].queue.append((user.id, msg))
+
+
 # TODO_: part 2.1
 def client_send(state):
     """Send all unsent messages with a delay of 0.05 seconds"""
@@ -62,27 +79,10 @@ def client_send(state):
                                 send_buf(users[_usr.id].socket, message)
                 except:
                     pass
-        for nick in disconnected_users:
-            print('ALERT::{} disconnected'.format(nick))
-            users[nick].c.close()
-            del users[nick]
-
-
-def command_handle(nick, user, msg):
-    msg = msg.replace('\n','')
-    msg_list = msg.split()
-
-    if nick in users and user is not users[nick]:
-        if len(msg_list) > 1 and msg_list[0] == "/nick":
-            users[msg_list[1]] = user
-            user.id = msg_list[1]
-            send_buf(user.socket, "#SERVER you are connected!")
-    else:
-        for command in commands.commands:
-            if msg_list[0] == command:
-                commands.commands[command][0](users[nick], msg_list, channels, users)
-                return
-        users[nick].queue.append((user.id, msg))
+      #   for nick in disconnected_users:
+        #     print('ALERT::{} disconnected'.format(nick))
+          #   users[nick].c.close()
+            # del users[nick]
 
 
 # TODO_: part 2.2

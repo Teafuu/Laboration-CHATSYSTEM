@@ -159,17 +159,17 @@ def display_online_users(user, msg, channels, users):
     server_alert(user, ['SERVER', users.keys()], ':')
 
 
-commands = {'help' : (list_commands,"Commands"),
-            'join': (join_channel, "[Channel Name]"),
-            'part' : (part_channel, "[Channel Name"),
-            'kick' : (kick_user,"[Server] [Nickname]"),
-            'list' : (list_users,"[Server]"),
-            'channels' : (list_channels,"Displays all servers"),
-            'w' : (whisper_user,"#[Server] or [Nickname] + [message]"),
-            'nick': (change_nick,"[New Nickname"),
-            'op' : (add_operator,"[Server] [Nickname]"),
-            'unop' : (remove_operator,"[Server] [Nickname]"),
-            'topic' : (change_topic,"[Server] [Topic]"),
-            'quit' : (quit_server,"Quits application"),
-            'joined' : (display_user_channels,"Displays your servers"),
-            'online' : (display_online_users, "Displays all users")}
+commands = {'/help' : (list_commands,"Commands"),
+            '/join': (join_channel, "[Channel Name]"),
+            '/part' : (part_channel, "[Channel Name"),
+            '/kick' : (kick_user,"[Server] [Nickname]"),
+            '/list' : (list_users,"[Server]"),
+            '/channels' : (list_channels,"Displays all servers"),
+            '/w' : (whisper_user,"#[Server] or [Nickname] + [message]"),
+            '/nick': (change_nick,"[New Nickname"),
+            '/op' : (add_operator,"[Server] [Nickname]"),
+            '/unop' : (remove_operator,"[Server] [Nickname]"),
+            '/topic' : (change_topic,"[Server] [Topic]"),
+            '/quit' : (quit_server,"Quits application"),
+            '/joined' : (display_user_channels,"Displays your servers"),
+            '/online' : (display_online_users, "Displays all users")}
