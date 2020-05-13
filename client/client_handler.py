@@ -13,8 +13,12 @@ def format_check(msg):
     if len(msg.split()) > 0:
         cmd, para = msg.split()[0], msg.split()[1:]
         if cmd in commands and len(para) == commands.get(cmd):
-            return True
+            _msg = msg.split()
+            parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
+            print('format check parsed_msg:', parsed_msg)
+            return True, parsed_msg
     print('Syntax error!')
+    return False, None
 
 
 class Client:
@@ -68,10 +72,12 @@ class Client:
         while True:
             msg = input('>> ')
             # if msg != '\n' and msg != '' and format_check(msg):
-            if format_check(msg):
-                _msg = msg.split()
-                parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
-                print('parsed_msg:', parsed_msg)
+            check, parsed_msg = format_check(msg)
+            # if format_check(msg):
+            if check:
+                # _msg = msg.split()
+                # parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
+                print('run parsed_msg:', parsed_msg)
                 self.send_thread(parsed_msg)
 
 
