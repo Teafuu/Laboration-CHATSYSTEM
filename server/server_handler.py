@@ -103,8 +103,8 @@ def ping_thread(state):
     """Send PING message to users every PING_FREQ seconds"""
     while state.running:
         time.sleep(PING_FREQ)
-        for nick in users:
-            users[nick].queue.append(('SERVER', 'PING'))
+        # for nick in users:
+            # users[nick].queue.append('')
 
 def input_thread(state):
     stop = input("Server started, press Enter top stop.\n")
