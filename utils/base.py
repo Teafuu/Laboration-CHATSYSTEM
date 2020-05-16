@@ -7,17 +7,17 @@ class ThreadState:
 
 
 def send_buf(socket, message):
-    msg_to_send = message.encode('ascii')
+    msg_to_send = message.encode('utf-8')
     msg_len = str(len(msg_to_send)).rjust(HEADER_SIZE, '0')
-    socket.send(msg_len.encode('ascii'))
+    socket.send(msg_len.encode('utf-8'))
     socket.send(msg_to_send)
 
 
 def read_buf(socket):
     while True:
         try:
-            msg_len = socket.recv(HEADER_SIZE).decode('ascii')
-            data = socket.recv(int(msg_len)).decode('ascii')
+            msg_len = socket.recv(HEADER_SIZE).decode('utf-8')
+            data = socket.recv(int(msg_len)).decode('utf-8')
             return data if data else None
         except:
             return None

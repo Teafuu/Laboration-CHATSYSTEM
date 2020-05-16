@@ -1,19 +1,6 @@
 from server import objects
 
 
-class color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
-
-
 def join_channel(user, msg, channels, users):
     channel = msg[1]
     if channel in channels:
@@ -99,9 +86,9 @@ def list_user_channels(user, msg, channels, users):
 def display_online_users(user, msg, channels, users):
     if users:
         msg_to_send = f'All online users ({len(users)}):\n'
-        for member in sorted(users):
+        for member in sorted(users, key=lambda x: x.casefold()):
             # msg_to_send += f'{"":9}{member}\n' if member != user.id else f'{"":9}{color.BOLD}{member}{color.END}\n'
-            msg_to_send += f'{"":9}{color.BOLD}{member}{color.END}\n' if member == user.id else f'{"":9}{member}\n'
+            msg_to_send += f'{"":9}{member}\n'
         server_alert(user, ['SERVER', msg_to_send])
     else:
         server_alert(user, ['SERVER', '<No online users>'])
@@ -110,13 +97,13 @@ def display_online_users(user, msg, channels, users):
 def list_users(user, msg, channels, users):  # Non-alphabetic, fix later
     channel_name = msg[1]
     if channel_exists(channel_name, user):
-        msg_to_send = f'Members of {channel_name}\n{"":9}{color.BOLD}+{channels[channel_name].admin.id}{color.END}\n' if user == channels[channel_name].admin else f'Members of {channel_name}\n{"":9}+{channels[channel_name].admin.id}\n' # Text & admin
+        msg_to_send = f'Members of {channel_name}\n{"":9}+{channels[channel_name].admin.id}\n'  # Text & admin
         # msg_to_send += f'{"":9}{channels[channel_name].admin.id}\n'
-        for op in sorted([o.id for o in channels[channel_name].operators], key=lambda x: (x.casefold(), x)):
+        for op in sorted([o.id for o in channels[channel_name].operators], key=lambda x: x.casefold()):
             if op != channels[channel_name].admin.id:
-                msg_to_send += f'{"":9}{color.BOLD}@{op}{color.END}\n' if user.id == op else f'{"":9}@{op}\n'
-        for member in sorted([m.id for m in channels[channel_name].members if m not in channels[channel_name].operators], key=lambda x: (x.casefold(), x)):
-            msg_to_send += f'{"":9}{color.BOLD}{member}{color.END}\n' if user.id == member else f'{"":9}{member}\n'
+                msg_to_send += f'{"":9}@{op}\n'
+        for member in sorted([m.id for m in channels[channel_name].members if m not in channels[channel_name].operators], key=lambda x: x.casefold()):
+            msg_to_send += f'{"":9}{member}\n'
         server_alert(user, ['SERVER', msg_to_send])
 
 

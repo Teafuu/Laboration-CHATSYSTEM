@@ -1,3 +1,8 @@
+# Run from terminal
+import os, sys
+file_dir = os.path.dirname('/Users/thomasliu/IntelliJProjects/ADS2/Laboration-CHATSYSTEM/client')
+sys.path.append(file_dir)
+
 from tkinter import *
 from client import client_handler as c
 
@@ -106,13 +111,12 @@ class ChatPage(Frame):
         self.input_field.bind('<Return>', self.send_message)
         self.input_field.pack()
 
-        name_label = Label(self, text=controller.nickname,  font=("Courier", 8), bg="#34495E", fg="white")
+        name_label = Label(self, text=controller.nickname, font=("Courier", 8), bg="#34495E", fg="white")
         connected_label = Label(self, text="Connected: " + controller.ip, font=("Courier", 6), bg="#34495E")
         connected_label.pack(side="right", anchor="sw")
         name_label.pack(side="right", anchor="sw")
 
         self.client = c.Client(controller.nickname, controller.ip, self)
-
 
     def send_message(self, event):
         msg = self.input_field.get()
@@ -122,7 +126,7 @@ class ChatPage(Frame):
                 self.client.send_thread(parsed_mg)
                 _msg = msg.split(" ")
                 if _msg[0] == '/msg':
-                    self.chat.insert(END, "to {}> {}".format(_msg[1], ' '.join(_msg[2:])) + "\n")
+                    self.chat.insert(END, "<to {}> {}".format(_msg[1], ' '.join(_msg[2:])) + "\n")
             else:
                 self.receive_message('Client: SYNTAX ERROR!!!')
             self.chat.see(END)
