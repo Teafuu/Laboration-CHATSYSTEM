@@ -73,7 +73,6 @@ class Client:
             if msg:
                 # winsound.Beep(100, 100)
                 # winsound.Beep(100, 200)
-
                 if self.interface:
                     self.interface.receive_message(msg)
                 else:
@@ -91,7 +90,7 @@ class Client:
             if check:
                 self.send_thread(parsed_msg)
             else:
-                print('Client: SYNTAX ERR0R!!!')
+                print('Client: SYNTAX ERROR!!!')
 
 
 if __name__ == '__main__':

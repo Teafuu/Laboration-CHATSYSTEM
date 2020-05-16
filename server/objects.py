@@ -5,6 +5,7 @@ class User:
         self.queue = []  # message queue
         self.connected = True
         self.channel = []  # channel name
+        self.attempts = 0
 
 
 class Channel:

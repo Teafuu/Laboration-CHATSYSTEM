@@ -40,6 +40,7 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
         msg = read_buf(c_sock)
         if not msg:
             continue
+        user.attempts = 0
         command_handle(user.id, user, msg)
     c_sock.close()
 
@@ -88,22 +89,22 @@ def client_send(state):
                             if member.id != nick:
                                 send_buf(users[member.id].socket, message)
                 except:
-                    pass
-      #   for nick in disconnected_users:
-        #     print('ALERT::{} disconnected'.format(nick))
-          #   users[nick].c.close()
-            # del users[nick]
+                    users[nick].attempts += 1
+                    if users[nick].attempts > 9:
+                        disconnected_users.append(users[nick])
+        for nick in disconnected_users:
+            print('ALERT::{} disconnected'.format(nick))
+            users[nick].c.close()
+            del users[nick]
 
 
 # TODO_: part 2.2
 def ping_thread(state):
     """Send PING message to users every PING_FREQ seconds"""
-    # while state.running:
-    #     time.sleep(PING_FREQ)
-    #     for nick in users:
-    #         users[nick].queue.append(('SERVER', 'PING'))
-    pass
-
+    while state.running:
+        time.sleep(PING_FREQ)
+        for nick in users:
+            users[nick].queue.append(('SERVER', 'PING'))
 
 def input_thread(state):
     stop = input("Server started, press Enter top stop.\n")
