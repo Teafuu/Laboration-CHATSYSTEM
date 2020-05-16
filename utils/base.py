@@ -16,8 +16,8 @@ def send_buf(socket, message):
 def read_buf(socket):
     while True:
         try:
-            msg_len = socket.recv(HEADER_SIZE).decode('ascii')
-            data = socket.recv(int(msg_len)).decode('ascii')
+            msg_len = socket.recv(HEADER_SIZE).decode()
+            data = socket.recv(int(msg_len)).decode()
             return data if data else None
         except:
             return None
