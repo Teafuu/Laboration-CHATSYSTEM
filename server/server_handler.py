@@ -1,4 +1,7 @@
 # Coding: utf8
+import os, sys
+file_dir = os.path.dirname('/Users/thomasliu/IntelliJProjects/ADS2/Laboration-CHATSYSTEM/utils')
+sys.path.append(file_dir)
 
 from utils.base import *
 from utils.config import *
@@ -6,7 +9,8 @@ import socket, threading, time
 from server import commands
 from server import objects
 
-HOST = input("Host IP: ")
+# HOST = input("Host IP: ")
+HOST = ''
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(QUEUE_SIZE)
@@ -41,6 +45,7 @@ def client_handle(c_sock, c_addr, state):  # to be implemented
 
 
 def command_handle(nick, user, msg):
+    print('msg no replace:', msg)
     msg = msg.replace('\n', '')
     msg_list = msg.split(':')
     print('msg:', msg)
@@ -71,14 +76,17 @@ def client_send(state):
                 print('this is queue:', queue)
             while len(queue) > 0:
                 sender, msg = queue.pop(0)
-                message = '{}> {}'.format(sender, msg)
+                message = '<{}> {}'.format(sender, msg)
                 try:
-                    if ":" in message[0]:  # private message
+                    # if ":" in message[0]:  # private message
+                    if '#' not in sender:  # private message
                         send_buf(users[nick].socket, message)
-                    else:  # channel message
-                        for _usr in channels[message.split(' ')[0][1:]].members:  # message to everyone
-                            if _usr.id != nick:
-                                send_buf(users[_usr.id].socket, message)
+                    # else:  # channel message
+                    elif '#' in sender:  # channel message
+                        # for _usr in channels[message.split(' ')[0][1:]].members:  # message to everyone
+                        for member in channels[sender].members:  # message to everyone
+                            if member.id != nick:
+                                send_buf(users[member.id].socket, message)
                 except:
                     pass
       #   for nick in disconnected_users:
