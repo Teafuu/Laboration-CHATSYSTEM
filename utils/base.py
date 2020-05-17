@@ -18,6 +18,6 @@ def read_buf(socket):
         try:
             msg_len = socket.recv(HEADER_SIZE).decode('utf-8')
             data = socket.recv(int(msg_len)).decode('utf-8')
-            return data if data else None
+            return data if data and '<!PING>' not in data else None
         except:
             return None

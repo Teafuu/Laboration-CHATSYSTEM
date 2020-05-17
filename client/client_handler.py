@@ -95,5 +95,5 @@ class Client:
 
 if __name__ == '__main__':
     name = input('enter name: ')
-    myClient = Client(name, "127.0.0.1")
+    myClient = Client(name, "192.168.0.104")
     myClient.run()
