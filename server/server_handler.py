@@ -1,4 +1,7 @@
 # Coding: utf8
+import os, sys
+file_dir = os.path.dirname('/Users/thomasliu/IntelliJProjects/ADS2/Laboration-CHATSYSTEM/utils')
+sys.path.append(file_dir)
 
 from utils.base import *
 from utils.config import *
@@ -6,142 +9,132 @@ import socket, threading, time
 from server import commands
 from server import objects
 
-HOST = input("Host IP: ")
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((HOST, PORT))
-s.listen(QUEUE_SIZE)
-s.settimeout(TIMEOUT)
-state = ThreadState()
 
-channels = {}
-users = {}
+class Server:
+    def __init__(self, ip=""):
+        self.HOST = ip
+        self.channels = {}
+        self.users = {}
+        self.client_threads = []
 
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.bind((HOST, PORT))
+        self.s.listen(QUEUE_SIZE)
+        self.s.settimeout(TIMEOUT)
+
+        self.state = ThreadState()
+        self.t_input = threading.Thread(target=self.input_thread)
+        self.t_send = threading.Thread(target=self.client_send)
+        self.t_ping = threading.Thread(target=self.ping_thread)
+
+        self.t_ping.start()
+        self.t_send.start()
+        self.t_input.start()
 
 # TODO_: part 1 & 2
-def client_handle(c_sock, c_addr, state):  # to be implemented
-    c_sock.settimeout(TIMEOUT)
-    # Read the first message from the client # and use this as the nickname/username
-    print("CONNECTION")
-    nick = read_buf(c_sock)
-    user = objects.User(nick, c_sock)
+    def client_handle(self, c_sock, c_addr):
+        c_sock.settimeout(TIMEOUT)
+        # Read the first message from the client # and use this as the nickname/username
 
-    if nick not in users:
-        users[nick] = user
-        send_buf(user.socket, "#SERVER you are connected!")
-    else:
-        send_buf(user.socket, "#SERVER nick taken, use /nick [name] to reconnect.")
+        nick = read_buf(c_sock)
+        user = objects.User(nick, c_sock)
 
-    print('ALERT::User {} at {}'.format(user.id, c_addr))
-    while state.running and user.connected:
-        msg = read_buf(c_sock)
-        user.attempts = 0
-        if not msg:
-            continue
-        command_handle(user.id, user, msg)
-    c_sock.close()
-
-
-def command_handle(nick, user, msg):
-    msg = msg.replace('\n','')
-    msg_list = msg.split(':')
-    if msg_list:
-        if nick in users and user is not users[nick]:
-            if len(msg_list) > 1 and msg_list[0] == "nick":
-                users[msg_list[1]] = user
-                user.id = msg_list[1]
-                send_buf(user.socket, "#SERVER you are connected!")
+        if nick not in self.users:
+            self.users[nick] = user
+            send_buf(user.socket, "#SERVER you are connected!")
         else:
-            for command in commands.commands:
-                if msg_list[0] == command:
-                    print("should run a beautiful function")
-                    commands.commands[command][0](users[nick], msg_list, channels, users)
-                    return
-            users[nick].queue.append((user.id, msg))
+            send_buf(user.socket, "#SERVER nick taken, use /nick [name] to reconnect.")
 
+        print('ALERT::User {} at {}'.format(user.id, c_addr))
+        while self.state.running and user.connected:
+            msg = read_buf(c_sock)
+            if not msg:
+                continue
+            user.attempts = 0
+            self.command_handle(user.id, user, msg)
+        c_sock.close()
+
+    def command_handle(self, nick, user, msg):
+        msg = msg.replace('\n', '')
+        msg_list = msg.split(':')
+        print('msg:', msg)
+        print('msg_list:', msg_list)
+        if msg_list:
+            if nick in self.users and user is not self.users[nick]:
+                if len(msg_list) > 1 and msg_list[0] == "/nick":
+                    self.users[msg_list[1]] = user
+                    user.id = msg_list[1]
+                    send_buf(user.socket, "#SERVER you are connected!")
+            else:
+                for cmd in commands.commands:
+                    if msg_list[0] == cmd:
+                        commands.commands[cmd][0](self.users[nick], msg_list, self.channels, self.users)
+                        return
+                self.users[nick].queue.append((user.id, msg))
 
 # TODO_: part 2.1
-def client_send(state):
-    """Send all unsent messages with a delay of 0.05 seconds"""
-    while state.running:
-        disconnected_users = []
-        time.sleep(0.05)
-        for nick in users:
-            queue = users[nick].queue
-            if queue:
-                print('this is queue:', queue)
-            while len(queue) > 0:
-                sender, msg = queue.pop(0)
-                message = '{}> {}'.format(sender, msg)
-                try:
-                    if ":" in message[0]: # private message
-                        send_buf(users[nick].socket, message)
-                    else: # channel message
-                        for _usr in channels[message.split(' ')[0][1:]].members: # message      to everyone
-                            if _usr.id != nick:
-                                send_buf(users[_usr.id].socket, message)
-                except:
-                    if users[nick].attempts < 10:
-                        users[nick].attempts += 1
-                    else:
-                        disconnected_users.append(users[nick])
-        for nick in disconnected_users:
-            print('ALERT::{} disconnected'.format(nick))
-            users[nick].c.close()
-            del users[nick]
+    def client_send(self):
+        while self.state.running:
+            disconnected_users = []
+            time.sleep(0.05)
+            for nick in self.users:
+                queue = self.users[nick].queue
+                if queue:
+                    print('this is queue:', queue)
+                while len(queue) > 0:
+                    sender, msg = queue.pop(0)
+                    message = '<{}> {}'.format(sender, msg)
+
+                    try:
+                        if '#' not in sender:  # private message
+                            send_buf(self.users[nick].socket, message)
+                        elif '#' in sender:  # channel message
+                            for member in self.channels[sender].members:  # message to everyone
+                                if member.id != nick:
+                                    send_buf(self.users[member.id].socket, message)
+                    except Exception as e:
+                        print("ERROR: ", e)
+                        self.users[nick].attempts += 1
+                        if self.users[nick].attempts > 9:
+                            disconnected_users.append(self.users[nick])
+
+            for nick in disconnected_users:
+                print('ALERT::{} disconnected'.format(nick))
+                self.users[nick].c.close()
+                del self.users[nick]
+
+    def ping_thread(self):
+        while self.state.running:
+            time.sleep(PING_FREQ)
+            for nick in self.users:
+                self.users[nick].queue.append(('!PING', ''))
+
+    def input_thread(self):
+        input("Server started, press Enter top stop.\n")
+        self.state.running = False
+
+    def run(self):
+        while self.state.running:
+            try:
+                c_sock, c_addr = self.s.accept()
+                c_thread = threading.Thread(target=self.client_handle, args=(c_sock, c_addr))
+                self.client_threads.append((c_thread, c_addr))
+                c_thread.start()
+            except Exception as e:
+                print("Error: ", e)
+
+    def quit(self):
+        self.t_input.join()
+        self.t_send.join()
+        self.t_ping.join()
+
+        for t, addr in self.client_threads:
+            t.join()
+            print("Thread for address {} stopped".format(addr))
+        print("Client threads stopped")
+        self.s.close()
 
 
-# TODO_: part 2.2
-def ping_thread(state):
-    """Send PING message to users every PING_FREQ seconds"""
-    while state.running:
-        time.sleep(PING_FREQ)
-        for nick in users:
-            users[nick].queue.append(('SERVER', 'PING'))
-
-
-def input_thread(state):
-    stop = input("Server started, press Enter top stop.\n")
-    state.running = False
-
-
-# TODO_: part 3
-t_input = threading.Thread(target=input_thread, args=(state,))
-t_send = threading.Thread(target=client_send, args=(state,))
-t_ping = threading.Thread(target=ping_thread, args=(state,))
-
-t_ping.start()
-t_send.start()
-t_input.start()
-
-
-# TODO_: part 3
-client_threads = []
-while state.running:
-    try:
-        c_sock, c_addr = s.accept()
-        c_thread = threading.Thread(target=client_handle, args=(c_sock, c_addr, state))
-        client_threads.append((c_thread, c_addr))
-        c_thread.start()
-    except:
-        pass
-
-
-# TODO: part 4
-print("Exiting, waiting for threads")
-
-t_input.join()
-print("Input thread stopped")
-
-t_send.join()
-print("Send thread stopped")
-
-t_ping.join()
-print("Ping thread stopped")
-
-for t, addr in client_threads:
-    t.join()
-    print("Thread for address {} stopped".format(addr))
-print("Client threads stopped")
-
-s.close()
-print("Socket closed")
+if __name__ == '__main__':
+    myServer = Server("192.168.0.104")
+    myServer.run()

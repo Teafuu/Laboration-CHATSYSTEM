@@ -1,3 +1,8 @@
+# Run from terminal
+import os, sys
+file_dir = os.path.dirname('/Users/thomasliu/IntelliJProjects/ADS2/Laboration-CHATSYSTEM/client')
+sys.path.append(file_dir)
+
 from tkinter import *
 from client import client_handler as c
 
@@ -79,8 +84,6 @@ class ChatPage(Frame):
         bg = "#34495E"
         self.controller = controller
         self.config(bg=bg)
-        self.client = c.Client(controller.nickname, controller.ip, self)
-
 
         container = Frame(self, bg=bg)
         container.pack(side="top", fill="both", expand=True)
@@ -108,26 +111,31 @@ class ChatPage(Frame):
         self.input_field.bind('<Return>', self.send_message)
         self.input_field.pack()
 
-        name_label = Label(self, text=controller.nickname,  font=("Courier", 8), bg="#34495E", fg="white")
+        name_label = Label(self, text=controller.nickname, font=("Courier", 8), bg="#34495E", fg="white")
         connected_label = Label(self, text="Connected: " + controller.ip, font=("Courier", 6), bg="#34495E")
         connected_label.pack(side="right", anchor="sw")
         name_label.pack(side="right", anchor="sw")
 
+        self.client = c.Client(controller.nickname, controller.ip, self)
+
     def send_message(self, event):
         msg = self.input_field.get()
-
         if len(msg) >= 1:
-            self.client.send_thread(msg)
-            _msg = msg.split(" ")
-            if _msg[0] == '/w':
-                self.chat.insert(END, "to {}> {}".format(_msg[1], ' '.join(_msg[2:])) + "\n")
+            check, parsed_mg = c.format_check(msg)
+            if check:
+                self.client.send_thread(parsed_mg)
+                _msg = msg.split(" ")
+                if _msg[0] == '/msg':
+                    self.chat.insert(END, "<to {}> {}".format(_msg[1], ' '.join(_msg[2:])) + "\n")
+            else:
+                self.receive_message('Client: SYNTAX ERROR!!!')
             self.chat.see(END)
             self.input_field.delete(0, 'end')
 
     def receive_message(self, msg):
         for _msg in msg.split('\n'):
             self.chat.insert(END, _msg + '\n')
-        self.chat.see(END)
+            self.chat.see(END)
 
 
 if __name__ == '__main__':

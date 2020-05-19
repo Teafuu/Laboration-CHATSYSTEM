@@ -1,440 +1,236 @@
-# from server import objects
-#
-#
-# def join_channel(user, msg, channels, users):  # doesn't like spaced channels
-#     if message_param_check(user, msg, 2):
-#         for channel in channels:  # checking if existing channel
-#             if msg[1] in channel:  # joining existing channel
-#                 if msg[1] in user.channel:
-#                     server_alert(user, ['SERVER', 'Already joined #' + channel], ':')
-#                     return
-#                 user.channel.append(msg[1])
-#                 channels[msg[1]].members.append(user)
-#                 server_alert(user, ["SERVER", ' MOTD: ' + channels[msg[1]].topic], ':')
-#                 server_alert(user, ['SERVER', user.id + ' joined'], ('#' + msg[1] + " "))
-#                 return
-#         # create new chnnael
-#         server_alert(user, ['SERVER', 'channel has been created.\n'], ':')
-#         channels[msg[1]] = objects.Channel(msg[1], user)
-#         user.channel.append(msg[1])
-#         print('channels:', channels)
-#         print('channels members:', channels[msg[1]].members[0].id)  # make for loop in /list
-#
-#
-# def server_alert(user, msg, type=''):
-#     user.queue.append((type + msg[0], msg[1]))
-#
-#
-# def part_channel(user, msg, channels, users):  # need to fix
-#     if message_param_check(user, msg, 2):
-#         if msg[1] in user.channel:
-#             leave_channel(user, msg[1], channels)
-#
-#
-# def leave_channel(user, channelName, channels):
-#     if user in channels[channelName].operators:
-#         channels[channelName].operators.remove(user)
-#         if user == channels[channelName].admin:
-#             if len(channels[channelName].members) <= 1:
-#                 server_alert(user, ['SERVER', 'Channel removed'], ':')
-#                 channels[channelName].members.remove(user)
-#                 channels.pop(channelName)
-#                 user.channel.remove(channelName)
-#             else:
-#                 for _usr in channels[channelName].members:
-#                     if _usr != user:
-#                         server_alert(user, ['SERVER', f'{user.id} has left. {_usr.id} is now admin'], ('#' + channelName + " "))
-#                         channels[channelName].admin = _usr
-#                         channels[channelName].operators.append(_usr)
-#                         server_alert(_usr, [user.id, ' you are now administartor'], ':')
-#                         channels[channelName].members.remove(user)
-#                         user.channel.remove(channelName)
-#     else:
-#         server_alert(user, ['SERVER', f'{user.id} has left'], ('#' + channelName + " "))
-#         server_alert(user, ['SERVER', f'You left #{channelName}'], ':')
-#         channels[channelName].members.remove(user)
-#         user.channel.remove(channelName)
-#
-#
-# def change_nick(user, msg, channels, users):  # UNIQUE IN CHANNELS?
-#     # server_alert(user, ['SERVER', user.id + ' has changed his nick to: ' + msg[1]], ('#' + channelName + " "))
-#     # users[msg[1]] = users.pop(user.id)
-#     # users[msg[1]].id = msg[1]
-#     # server_alert(user, ['SERVER', ' nick has been changed.'], ':')
-#
-#     if message_param_check(user, msg, 2):
-#         if msg[1] not in users:
-#             server_alert(user, ['SERVER', user.id + ' has changed his nick to: ' + msg[1]], ':')
-#             users[msg[1]] = users.pop(user.id)
-#             users[msg[1]].id = msg[1]
-#             # server_alert(user, ['SERVER', ' nick has been changed.'], ':')
-#         else:
-#             server_alert(user, ['SERVER', 'Nickname taken'], ':')
-#
-#
-# def list_channels(user, msg, channels, users):
-#     # server_alert(user,['SERVER',channels.keys()], ':')
-#
-#     if not channels:
-#         server_alert(user, ['SERVER', 'No existing channels'], ':')
-#         return
-#     msg_to_send = f'All channels ({len(channels)}):\n'
-#     # server_alert(user, ['SERVER', '{} ({}):'.format('All channels', len(channels))], ':')
-#     for channel in channels:
-#         # msg_to_send += channel + '\n'
-#         msg_to_send += f'#{channel}\n'
-#     server_alert(user, ['SERVER', msg_to_send], ':')
-#
-#
-# def list_users(user, msg, channels, users):
-#     # if user.channel is not None:
-#     #     if message_param_check(user, msg, 2):
-#     #         if channel_exists(channels, msg[1], user):
-#     #             server_alert(user,['SERVER',channels[msg[1]].members], '')
-#
-#     if message_param_check(user, msg, 2):
-#         if channel_exists(channels, msg[1], user):
-#             if msg[1] in user.channel:
-#                 member_iter = iter(channels[msg[1]].members)  # create iterable object
-#                 msg_to_send = f'+{next(member_iter).id}\n'
-#                 for member in member_iter:  # list rest of members
-#                     msg_to_send += member.id + '\n'
-#                 server_alert(user, ['SERVER', f'Channel members #{msg[1]} ({len(channels[msg[1]].members)}):\n{msg_to_send}'], ':')
-#             else:
-#                 server_alert(user, ['SERVER', 'Channel not joined.'], ':')
-#
-#
-# def list_commands(user, msg, channels, users):
-#     # msg_to_send = "\n"
-#     # for command in commands:
-#     #     msg_to_send += command +" " + commands[command][1] + "\n"
-#     # server_alert(user,['SERVER', msg_to_send], ':')
-#
-#     # if len(msg) == 1:
-#     msg_to_send = f'\n{"Usage":<39}{"Description"}\n{"-" * 5:<39}{"-" * 11}\n'
-#     for command in sorted(commands):
-#         msg_to_send += f'{command + " " + commands[command][1]:<39}{commands[command][2]}\n'
-#     server_alert(user, ['SERVER', msg_to_send], ':')
-#     # else:
-#     #     server_alert(user, ['SERVER', 'Invalid parameters'], ':')
-#
-#
-# def kick_user(user, msg, channels, users):  # LÄGG TILL MED OM ADMIN ELLER OP      # OP behåller op när kickad
-#     if message_param_check(user, msg, 3):
-#         channelName, receiver, reason = msg[1], msg[2], ' '.join(msg[3:])
-#         if channel_exists(channels, channelName, user):
-#             if check_operator(user, channels[channelName]):  # check permission
-#                 for u in channels[channelName].members:  # iterate through everyone in the channel
-#                     if receiver == u.id and users[receiver] != channels[
-#                         channelName].admin:  # removes user from appropriate channel
-#                         channels[channelName].members.remove(users[receiver])
-#                         server_alert(users[receiver], ['SERVER', receiver + ' has been kicked'], ('#' + channelName + " "))
-#                         server_alert(users[receiver], [user.id, "You have been kicked by the following reason: " + reason], ':')
-#                         users[receiver].channel.remove(channelName)
-#                         return
-#                 server_alert(user, ['SERVER', 'User does not exist'], ':')
-#
-#
-# def whisper_user(user, msg, channels, users):  # w user - skickar till sig själv
-#     # if message_param_check(user, msg, 2):
-#     #     receiver, msg = msg[1], ' '.join(msg[2:])
-#     #
-#     #     if receiver[0] == '#' and receiver[1:] in user.channel:
-#     #         server_alert(user, [receiver + ' ' + user.id, msg])
-#     #         return
-#     #     else:
-#     #         if receiver in users:
-#     #             server_alert(users[receiver], [user.id, msg], ':')
-#     #             return
-#
-#     if message_param_check(user, msg, 2):
-#         receiver, msg = msg[1], ' '.join(msg[2:])
-#
-#         if receiver[0] == '#' and receiver[1:] in user.channel:  # channel
-#             server_alert(user, [f'{receiver} : {user.id}', msg])
-#         elif receiver in users:  # user
-#             server_alert(users[receiver], [f'From {user.id}', msg], ':')
-#         elif receiver[1:] in channels and receiver[1:] not in user.channel:  # channel exists but not joined
-#             server_alert(user, ['SERVER', f'Channel {receiver} not joined'], ':')
-#         else:
-#             server_alert(user, ['SERVER', f'Channel {receiver} does not exist'], ':')
-#
-#
-# def change_topic(user, msg, channels, users):
-#     if message_param_check(user, msg, 2):
-#         channelName = msg[1]
-#         if channel_exists(channels, channelName, user):
-#             if check_operator(user, channels[channelName]):
-#                 channels[msg[1]].topic = ' '.join(msg[2:])
-#                 server_alert(user, ['SERVER', 'Topic has been changed succesfully'], ':')
-#                 server_alert(user, ['SERVER', 'Topic has been changed to: ' + channels[msg[1]].topic], ('#' + channelName + " "))
-#
-#
-# def add_operator(user, msg, channels, users):  # need to fix
-#     if message_param_check(user, msg, 3):
-#         channelName = msg[1]
-#         if check_operator(user, channels[channelName]):
-#             channels[channelName].operators.append(users[msg[2]])
-#             server_alert(users[msg[2]], ['SERVER', 'You have been added as operator.'], ':')
-#
-#
-# def remove_operator(user, msg, channels, users):  # need to fix
-#     if message_param_check(user, msg, 2):
-#         channelName = msg[1]
-#         if check_operator(user, channels[channelName]) and channels[channelName].admin.id != msg[1]:
-#             channels[channelName].operators.append(msg[1])
-#             server_alert(users[msg[1]], ['SERVER', 'You have been removed as operator'], ':')
-#
-#
-# def check_operator(user, channel):
-#     for op in channel.operators:
-#         if user.id == op.id:
-#             return True
-#     server_alert(user, ['SERVER', 'Invalid permissions'], ':')
-#     return False
-#
-#
-# def quit_server(user, msg, channels, users):  # need to fix
-#     server_alert(user, ['SERVER', user.id + " has quit."])
-#     users[user.id].connected = False
-#     del users[user.id]
-#
-#
-# def channel_exists(channels, channel_name, user):
-#     if channel_name in channels.keys():
-#         return True
-#     server_alert(user, ['SERVER', 'Channel does not exist.'], ':')
-#     return False
-#
-#
-# def message_param_check(user, msg, limit):
-#     if msg[0][0] != '/' or len(msg) < limit:
-#         server_alert(user, ['SERVER', 'Invalid parameters'], ':')
-#         return False
-#     return True
-#
-#
-# def display_user_channels(user, msg, channels, users):
-#     # server_alert(user, ['SERVER', user.channel], ':')
-#
-#     if not user.channel:
-#         server_alert(user, ['SERVER', 'No channels joined'], ':')
-#         return
-#     msg_to_send = f'Channels joined ({len(user.channel)}):\n'
-#     for channel in user.channel:
-#         msg_to_send += f'#{channel}\n'
-#     server_alert(user, ['SERVER', msg_to_send], ':')
-#
-#
-# def display_online_users(user, msg, channels, users):
-#     server_alert(user, ['SERVER', users.keys()], ':')
-#
-#
-# commands = {'/help': (list_commands, '', "Shows this message"),  # OK
-#             '/join': (join_channel, "#<channel>", 'Join existing channel, else create new channel'),  # OK
-#             '/part': (part_channel, "#<channel>", 'Leave channel'),
-#             # if part non existent nothing happens // leave_channel <-
-#             '/kick': (kick_user, "#<channel> <nickname> <reason>", 'Kick user, reason optional (Admin/operator)'),  # OK
-#             '/list': (list_users, "#<channel>", 'List channel members, admin/op is denoted by +/@'),  # OK
-#             '/channels': (list_channels, '', "List all channels"),  # OK
-#             '/w': (whisper_user, "#<channel> or <nickname> <message>", 'Send message to user och channel'),  # OK
-#             '/nick': (change_nick, "<nickname>", 'Change nickname. Must be unique'),  # OK
-#             '/op': (add_operator, "#<channel> <nickname>", 'Assign user operator privilege (Admin)'),
-#             '/unop': (remove_operator, "#<channel> <nickname>", 'Remove user operator privilege (Admin)'),
-#             '/topic': (change_topic, "#<channel> <topic>", 'Assign or change channel topic (Admin/operator)'),
-#             '/quit': (quit_server, '', "Quits application", 'Quit server'),
-#             '/joined': (display_user_channels, '', "List joined channels, + sign denotes admin"),
-#             '/online': (display_online_users, '', "Displays all users")}  # OK
-
-
 from server import objects
 
 
-def join_channel(user, msg, channels, users):  # doesn't like spaced channels
-    for channel in channels:  # checking if existing channel
-        if msg[1] in channel:  # joining existing channel
-            if msg[1] in user.channel:
-                return
-            user.channel.append(msg[1])
-            channels[msg[1]].members.append(user)
-            server_alert(user, ["SERVER", ' MOTD: ' + channels[msg[1]].topic], ':')
-            server_alert(user, ['SERVER', user.id + ' joined.'], ('#' + msg[1] + " "))
+def join_channel(user, msg, channels, users):
+    channel = msg[1]
+    if channel in channels:
+        if channel in user.channel:  # Case 1. if channel already joined
+            server_alert(user, ['SERVER', '<Channel already joined>'])
+        else:  # Case 2. join channel
+            user.channel.append(channel)
+            channels[channel].members.append(user)
+            server_alert(user, ['SERVER', f'<{channel} joined. MOTD: {channels[channel].topic}>'])
+            server_alert(user, [channel, f'<{user.id} has joined>'])
             return
-    # create new chnnael
-    server_alert(user, ['SERVER', 'channel has been created.'], ':')
-    channels[msg[1]] = objects.Channel(msg[1], user)
-    user.channel.append(msg[1])
-
-
-def server_alert(user, msg, type=''):
-    user.queue.append((type + msg[0], msg[1]))
+    else:  # Case 3. create new channel
+        server_alert(user, ['SERVER', '<Channel has been created>'])  # create new chnnael
+        channels[channel] = objects.Channel(channel, user)
+        user.channel.append(channel)
 
 
 def part_channel(user, msg, channels, users):
-    if message_param_check(user, msg, 2):
-        if msg[1] in user.channel:
-            leave_channel(user, msg[1], channels)
+    channel_name = msg[1]
+    if channel_exists(channel_name, user):
+        leave_channel(user, channel_name, channels)
 
 
-def leave_channel(user, channelName, channels):
-    if user in channels[channelName].operators:
-        channels[channelName].operators.remove(user)
-        if user == channels[channelName].admin:
-            if len(channels[channelName].members) <= 1:
-                server_alert(user, ['SERVER', ' server removed.'], ':')
-                channels[channelName].members.remove(user)
-                channels.pop(channelName)
-                user.channel.remove(channelName)
+def leave_channel(user, channel_name, channels):
+    if user in channels[channel_name].operators:
+        channels[channel_name].operators.remove(user)
+        if user == channels[channel_name].admin:  # Case 1. If sole member
+            if len(channels[channel_name].members) <= 1:
+                server_alert(user, ['SERVER', '<Channel removed>'])
+                channels[channel_name].members.remove(user)
+                channels.pop(channel_name)
+                user.channel.remove(channel_name)
             else:
-                for _usr in channels[channelName].members:
-                    if _usr != user:
-                        server_alert(user, ['SERVER', user.id + ' left.'], ('#' + channelName + " "))
-                        channels[channelName].admin = _usr
-                        channels[channelName].operators.append(_usr)
-                        server_alert(_usr, [user.id, ' you are now administartor.'], ':')
-                        channels[channelName].members.remove(user)
-                        user.channel.remove(channelName)
-    else:
-        server_alert(user, ['SERVER', user.id + ' left.'], ('#' + channelName + " "))
-        server_alert(user, ['SERVER', ' you left'], ':')
-        channels[channelName].members.remove(user)
-        user.channel.remove(channelName)
+                for _usr in channels[channel_name].members:
+                    if _usr != user:  # Case 2. if admin lave channel
+                        server_alert(user, ['SERVER', f'<You have left {channel_name}>'])
+                        server_alert(user, [channel_name, f'<{user.id} has left the channel>'])
+                        channels[channel_name].admin = _usr
+                        channels[channel_name].operators.append(_usr)
+                        server_alert(_usr, [user.id, f'You are now the admin of {channel_name}'])
+                        channels[channel_name].members.remove(user)
+                        user.channel.remove(channel_name)
+    else:  # Case 3. If members
+        server_alert(user, [channel_name, f'<{user.id} has left the channel>'])
+        server_alert(user, ['SERVER', f'<You left {channel_name}>'])
+        channels[channel_name].members.remove(user)
+        user.channel.remove(channel_name)
 
 
 def change_nick(user, msg, channels, users):
-    if msg[1] in users:
-        server_alert(user, ['SERVER', ' nick taken.'], ':')
+    nickname = msg[1]
+    if nickname not in users:
+        for channel_name in user.channel:  # Broadcast to user's channel(s)
+            server_alert(user, [channel_name, f'<{user.id} has changed nickname to {nickname}>'])
+        users[nickname] = users.pop(user.id)
+        users[nickname].id = nickname
+        server_alert(user, ['SERVER', f'<Your nickname is now {user.id}>'])
     else:
-        for channelName in user.channel:
-            server_alert(user, ['SERVER', user.id + ' has changed his nick to: ' + msg[1]], ('#' + channelName + " "))
-        users[msg[1]] = users.pop(user.id)
-        users[msg[1]].id = msg[1]
-        server_alert(user, ['SERVER', ' nick has been changed.'], ':')
+        server_alert(user, ['SERVER', '<Nickname taken>'])
 
 
-def list_channels(user, msg, channels, users):
-    server_alert(user, ['SERVER', channels.keys()], ':')
+def list_all_channels(user, msg, channels, users):
+    if channels:
+        msg_to_send = f'All channels ({len(channels)}):\n'
+        for channel_name in sorted(channels):
+            msg_to_send += f'{"":9}{channel_name}\n'
+        server_alert(user, ['SERVER', msg_to_send])
+    else:
+        server_alert(user, ['SERVER', '<No existing channels>'])
 
 
-def list_users(user, msg, channels, users):
-    if user.channel is not None:
-        if message_param_check(user, msg, 2):
-            if channel_exists(channels, msg[1], user):
-                server_alert(user, ['SERVER', channels[msg[1]].members], ':')
+def list_user_channels(user, msg, channels, users):
+    if user.channel:
+        msg_to_send = f'Channels joined ({len(user.channel)}):\n'
+        for channel in user.channel:
+            # msg_to_send += f'{channel}\n'
+            msg_to_send += f'{"":9}{channel}+\n' if user == channels[channel].admin else f'{"":9}{channel}\n'
+        server_alert(user, ['SERVER', msg_to_send])
+    else:
+        server_alert(user, ['SERVER', '<No channels joined>'])
+
+
+def display_online_users(user, msg, channels, users):
+    if users:
+        msg_to_send = f'All online users ({len(users)}):\n'
+        for member in sorted(users, key=lambda x: x.casefold()):
+            # msg_to_send += f'{"":9}{member}\n' if member != user.id else f'{"":9}{color.BOLD}{member}{color.END}\n'
+            msg_to_send += f'{"":9}{member}\n'
+        server_alert(user, ['SERVER', msg_to_send])
+    else:
+        server_alert(user, ['SERVER', '<No online users>'])
+
+
+def list_users(user, msg, channels, users):  # Non-alphabetic, fix later
+    channel_name = msg[1]
+    if channel_exists(channel_name, user):
+        msg_to_send = f'Members of {channel_name}\n{"":9}+{channels[channel_name].admin.id}\n'  # Text & admin
+        # msg_to_send += f'{"":9}{channels[channel_name].admin.id}\n'
+        for op in sorted([o.id for o in channels[channel_name].operators], key=lambda x: x.casefold()):
+            if op != channels[channel_name].admin.id:
+                msg_to_send += f'{"":9}@{op}\n'
+        for member in sorted([m.id for m in channels[channel_name].members if m not in channels[channel_name].operators], key=lambda x: x.casefold()):
+            msg_to_send += f'{"":9}{member}\n'
+        server_alert(user, ['SERVER', msg_to_send])
 
 
 def list_commands(user, msg, channels, users):
-    msg_to_send = f'\n{"Usage":<39}{"Description"}\n{"-" * 5:<39}{"-" * 11}\n'
+    msg_to_send = f'\n{"Usage":<36}{"Description"}\n{"-" * 5:<36}{"-" * 11}\n'
     for command in sorted(commands):
-        msg_to_send += f'{command + " " + commands[command][1]:<39}{commands[command][2]}\n'
-    server_alert(user, ['SERVER', msg_to_send], ':')
+        msg_to_send += f'/{command + " " + commands[command][1]:<35}{commands[command][2]}\n'
+    server_alert(user, ['SERVER', msg_to_send])
 
 
 def kick_user(user, msg, channels, users):
-    if message_param_check(user, msg, 3):
-        channelName, receiver, msg = msg[1], msg[2], ' '.join(msg[3:])
-        if channel_exists(channels, channelName, user):
-            if check_operator(user, channels[channelName]):  # check permission
-                for u in channels[channelName].members:  # iterate through everyone in the channel
-                    if receiver == u.id and users[receiver] != channels[
-                        channelName].admin:  # removes user from appropriate channel
-                        channels[channelName].members.remove(users[receiver])
-                        server_alert(users[receiver], ['SERVER', receiver + ' has been kicked'],
-                                     ('#' + channelName + " "))
-                        server_alert(users[receiver], [user.id, "You have been kicked by the following reason: " + msg],
-                                     ':')
-                        users[receiver].channel.remove(channelName)
-                        return
-                server_alert(user, ['SERVER', 'User does not exist'], ':')
+    channel_name, receiver, reason = msg[1], msg[2], ' '.join(msg[3:])
+    if channel_exists(channel_name, user):
+        if check_operator(user, channels[channel_name]):  # check permission
+            if user == users.get(receiver):
+                server_alert(user, ['SERVER', '<You cannot kick yourself>'])
+            elif user != channels[channel_name].admin and users.get(receiver) in channels[channel_name].operators:
+                server_alert(user, ['SERVER', '<Permission denied>'])
+            elif users.get(receiver) in channels[channel_name].members and users[receiver] != channels[channel_name].admin:
+                channels[channel_name].operators.remove(users[receiver]) if users.get(receiver) in channels[channel_name].operators else None
+                channels[channel_name].members.remove(users[receiver])
+                server_alert(user, ['SERVER', f'<You have kicked {receiver}>'])  # To admin
+                server_alert(users[receiver], [f'+{user.id}' if user == channels[channel_name].admin else f'@{user.id}', f'You have been kicked from {channel_name} by the following reason: {reason}'])  # to kicked
+                server_alert(user, [channel_name, f'<{receiver} has been kicked>'])  # To channel
+                users[receiver].channel.remove(channel_name)
+            else:
+                server_alert(user, ['SERVER', '<Invalid user>'])
 
 
-def whisper_user(user, msg, channels, users):
-    if message_param_check(user, msg, 2):
-        receiver, msg = msg[1], ' '.join(msg[2:])
-
-        if receiver[0] == '#' and receiver[1:] in user.channel:
-            server_alert(user, [receiver + ' ' + user.id, msg])
-            return
-        else:
-            if receiver in users:
-                server_alert(users[receiver], [user.id, msg], ':')
-                return
+def whisper_user(user, msg, channels, users):  # rewrite: if receiver[0] == #: ... else: # private message
+    receiver, msg = msg[1], ' '.join(msg[2:])
+    if receiver in user.channel:  # Case 1. Broadcast
+        server_alert(user, [receiver, f'<{user.id}> {msg}'])
+    elif receiver in users:  # Case 2. Private message
+        server_alert(users[receiver], [user.id, msg])
+    elif receiver in channels and receiver not in user.channel:  # channel not joined
+        server_alert(user, ['SERVER', f'<Channel {receiver} not joined>'])
+    elif receiver[0] != '#' and receiver not in users:  # Case 4. Invalid user
+        server_alert(user, ['SERVER', f'<User {receiver} does not exist>'])
+    else:  # Case 5. Invalid channel
+        server_alert(user, ['SERVER', f'<Channel {receiver} does not exist>'])
 
 
 def change_topic(user, msg, channels, users):
-    if message_param_check(user, msg, 2):
-        channelName = msg[1]
-        if channel_exists(channels, channelName, user):
-            if check_operator(user, channels[channelName]):
-                channels[msg[1]].topic = ' '.join(msg[2:])
-                server_alert(user, ['SERVER', 'Topic has been changed succesfully'], ':')
-                server_alert(user, ['SERVER', 'Topic has been changed to: ' + channels[msg[1]].topic],
-                             ('#' + channelName + " "))
+    channel_name, topic = msg[1], ' '.join(msg[2:])
+    if channel_exists(channel_name, user) and check_operator(user, channels[channel_name]):
+        channels[channel_name].topic = topic
+        server_alert(user, ['SERVER', f'<Topic has been changed to: {channels[channel_name].topic}>'])  # to user
+        server_alert(user, [channel_name, f'<Topic has been changed to: {channels[channel_name].topic}>'])  # to channel
 
 
-def add_operator(user, msg, channels, users):  # need to fix
-    if message_param_check(user, msg, 3):
-        channelName = msg[1]
-        if check_operator(user, channels[channelName]):
-            channels[channelName].operators.append(users[msg[2]])
-            server_alert(users[msg[2]], ['SERVER', 'You have been added as operator.'], ':')
+def add_operator(user, msg, channels, users):
+    channel_name, receiver = msg[1], ' '.join(msg[2:])
+    if channel_exists(channel_name, user):  # check channel
+        if user != channels[channel_name].admin:  # check admin
+            server_alert(user, ['SERVER', '<Permission denied>'])
+        elif users.get(receiver) not in channels[channel_name].members:  # check user
+            server_alert(user, ['SERVER', '<Invalid user>'])
+        else:
+            if user.id == receiver:  # admin admin
+                server_alert(user, ['SERVER', '<You are already admin>'])
+            elif users[receiver] in channels[channel_name].operators:  # already op
+                server_alert(user, ['SERVER', '<User already operator>'])
+            else:
+                channels[channel_name].operators.append(users[receiver])
+                server_alert(user, ['SERVER', f'<Operator privilege assigned to {receiver}>'])  # to admin
+                server_alert(users[receiver], [f'@{user.id}', f'You have been added as operator of {channel_name}'])  # to op
+                server_alert(user, [channel_name, f'<{receiver} is now an operator>'])  # to channel
 
 
-def remove_operator(user, msg, channels, users):  # need to fix
-    if message_param_check(user, msg, 2):
-        channelName = msg[1]
-        if check_operator(user, channels[channelName]) and channels[channelName].admin.id != msg[1]:
-            channels[channelName].operators.append(msg[1])
-            server_alert(users[msg[1]], ['SERVER', 'You have been removed as operator'], ':')
-
-
-def check_operator(user, channel):
-    for op in channel.operators:
-        if user.id == op.id:
-            return True
-    server_alert(user, ['SERVER', 'Invalid permissions'], ':')
-    return False
+def remove_operator(user, msg, channels, users):
+    channel_name, receiver = msg[1], ' '.join(msg[2:])
+    if channel_exists(channel_name, user):  # check channel
+        if user != channels[channel_name].admin:  # check admin
+            server_alert(user, ['SERVER', '<Permission denied>'])
+        # elif users.get(receiver) not in channels[channel_name].members:  # check user
+        elif receiver not in users:  # check user
+            server_alert(user, ['SERVER', '<Invalid user>'])
+        else:
+            if user.id == receiver:  # /unop admin
+                server_alert(user, ['SERVER', '<You are the admin>'])
+            elif users[receiver] not in channels[channel_name].operators:  # not op
+                server_alert(user, ['SERVER', '<User is not operator>'])
+            else:
+                channels[channel_name].operators.remove(users[receiver])
+                server_alert(user, ['SERVER', f'<Operator privilege removed from {receiver}>'])  # to admin
+                server_alert(users[receiver], [f'+{user.id}', f'You have been removed as operator of {channel_name}'])  # to op
+                server_alert(user, [channel_name, f'<{receiver} has been removed as operator>'])  # to channel
 
 
 def quit_server(user, msg, channels, users):  # need to fix
-    server_alert(user, ['SERVER', user.id + " has quit."])
+    server_alert(user, ['SERVER', f'{user.id} has quit'])
+    for channel_name in user.channel:  # doesnt remove first channel..
+        leave_channel(user, channel_name, channels)
     users[user.id].connected = False
     del users[user.id]
 
 
-def channel_exists(channels, channelName, user):
-    if channelName in channels.keys():
+def check_operator(user, channel):
+    if user in channel.operators:
         return True
-    server_alert(user, ['SERVER', 'channel does not exist.'], ':')
+    server_alert(user, ['SERVER', '<Invalid permissions>'])
     return False
 
 
-def message_param_check(user, msg, limit):
-    if len(msg) < limit:
-        server_alert(user, ['SERVER', 'Invalid parameters'], ':')
-        return False
-    return True
+def channel_exists(channel_name, user, prompt=None):
+    if channel_name in user.channel:
+        return True
+    server_alert(user, ['SERVER', f'<{prompt}>']) if prompt else server_alert(user, ['SERVER', '<Invalid channel>'])
+    return False
 
 
-def display_user_channels(user, msg, channels, users):
-    server_alert(user, ['SERVER', user.channel], ':')
+def server_alert(user, msg):
+    user.queue.append((msg[0], msg[1]))
 
 
-def display_online_users(user, msg, channels, users):
-    server_alert(user, ['SERVER', users.keys()], ':')
-
-
-commands = {'help': (list_commands, '', "Shows this message"),  # OK
-            'join': (join_channel, "#<channel>", 'Join existing channel, else create new channel'),  # OK
+commands = {'help': (list_commands, '', "Shows this message"),
+            'join': (join_channel, "#<channel>", 'Join existing channel, else create new channel'),
             'part': (part_channel, "#<channel>", 'Leave channel'),
-            'kick': (kick_user, "#<channel> <nickname> <reason>", 'Kick user, reason optional (Admin/operator)'),  # OK
-            'list': (list_users, "#<channel>", 'List channel members, admin/op is denoted by +/@'),  # OK
-            'channels': (list_channels, '', "List all channels"),  # OK
-            'msg': (whisper_user, "#<channel> or <nickname> <message>", 'Send message to user och channel'),  # OK
-            'nick': (change_nick, "<nickname>", 'Change nickname. Must be unique'),  # OK
-            'op': (add_operator, "#<channel> <nickname>", 'Assign user operator privilege (Admin)'),
-            'unop': (remove_operator, "#<channel> <nickname>", 'Remove user operator privilege (Admin)'),
-            'topic': (change_topic, "#<channel> <topic>", 'Assign or change channel topic (Admin/operator)'),
+            'kick': (kick_user, "#<channel> <nick> <reason>", 'Kick user, reason optional (Admin/op)'),
+            'list': (list_users, "#<channel>", 'List channel members, admin/op denoted by +/@'),
+            'channels': (list_all_channels, '', "List all channels"),
+            'msg': (whisper_user, "#<channel> or <nick> <message>", 'Send message to user or channel'),
+            'nick': (change_nick, "<nick>", 'Change nickname, must be unique'),
+            'op': (add_operator, "#<channel> <nick>", 'Assign user operator privilege (Admin)'),
+            'unop': (remove_operator, "#<channel> <nick>", 'Remove user operator privilege (Admin)'),
+            'topic': (change_topic, "#<channel> <topic>", 'Assign or change channel topic (Admin/op)'),
             'quit': (quit_server, '', "Quits application", 'Quit server'),
-            'joined': (display_user_channels, '', "List joined channels, + sign denotes admin"),
-            'online': (display_online_users, '', "Displays all users")}  # OK
+            'joined': (list_user_channels, '', "List joined channels, admin denoted by +"),
+            'online': (display_online_users, '', "List all users")}

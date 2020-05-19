@@ -1,23 +1,41 @@
+# Run from terminal
+import os, sys
+file_dir = os.path.dirname('/Users/thomasliu/IntelliJProjects/ADS2/Laboration-CHATSYSTEM/utils')
+sys.path.append(file_dir)
+
 from utils.base import *
 from utils.config import *
-
 import socket, threading, time
 
 # import winsound
 
-commands = {'/help': 0, '/join': 1, '/part': 1, '/kick': 3, '/list': 1, '/channels': 0, '/msg': 2,
-            '/nick': 1, '/op': 2, '/unop': 2, '/topic': 2, '/quit': 0, '/joined': 0}
+commands_no_channel = {'/channels': 0, '/help': 0, '/joined': 0, '/online': 0, '/quit': 0, '/nick': 1}
+commands_channel = {'/join': 1, '/list': 1, '/part': 1, '/op': 2, '/unop': 2}
+commands_sentence = {'/msg': 2, '/topic': 2, '/kick': 3}
 
 
 def format_check(msg):
-    if len(msg.split()) > 0:
+    if len(msg.split()) > 0 and msg[0] == '/':
         cmd, para = msg.split()[0], msg.split()[1:]
-        if cmd in commands and len(para) == commands.get(cmd):
+        if cmd in commands_no_channel and len(para) == commands_no_channel[cmd]:  # Case 1. No channels
             _msg = msg.split()
             parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
-            print('format check parsed_msg:', parsed_msg)
             return True, parsed_msg
-    print('Syntax error!')
+        elif cmd in commands_channel and len(para) == commands_channel[cmd] and para[0][0] == '#':  # Case 2. Channels
+            _msg = msg.split()
+            parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
+            return True, parsed_msg
+        elif cmd in commands_sentence and len(para) >= commands_sentence[cmd]:  # Case 3. Sentence
+            if (cmd == '/topic' or cmd == '/kick') and para[0][0] == '#':
+                _msg = msg.split()
+                parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
+                return True, parsed_msg
+            elif cmd == '/msg':
+                _msg = msg.split()
+                parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
+                return True, parsed_msg
+            return False, None
+        return False, None
     return False, None
 
 
@@ -45,8 +63,6 @@ class Client:
                 if _msg:
                     send_buf(self.s, _msg)
                 return
-                    # else:
-                    #     print('Syntax error!')
             except:
                 self.state.running = False
             time.sleep(5)
@@ -57,7 +73,6 @@ class Client:
             if msg:
                 # winsound.Beep(100, 100)
                 # winsound.Beep(100, 200)
-
                 if self.interface:
                     self.interface.receive_message(msg)
                 else:
@@ -70,17 +85,15 @@ class Client:
 
     def run(self):
         while True:
-            msg = input('>> ')
-            # if msg != '\n' and msg != '' and format_check(msg):
+            msg = input()
             check, parsed_msg = format_check(msg)
-            # if format_check(msg):
             if check:
-                # _msg = msg.split()
-                # parsed_msg = ':'.join([_msg[0][1:]] + _msg[1:])
-                print('run parsed_msg:', parsed_msg)
                 self.send_thread(parsed_msg)
+            else:
+                print('Client: SYNTAX ERROR!!!')
 
 
-name = input('enter name: ')
-myClient = Client(name, "127.0.0.1")
-myClient.run()
+if __name__ == '__main__':
+    name = input('enter name: ')
+    myClient = Client(name, "192.168.0.104")
+    myClient.run()
