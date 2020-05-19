@@ -136,5 +136,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    myServer = Server("192.168.0.104")
+    myServer = Server(input("Enter IP-address"))
     myServer.run()
