@@ -1,12 +1,6 @@
-# Run from terminal
-import os, sys
-file_dir = os.path.dirname('/Users/thomasliu/IntelliJProjects/ADS2/Laboration-CHATSYSTEM/utils')
-sys.path.append(file_dir)
-
 from utils.base import *
 from utils.config import *
 import socket, threading, time
-
 import winsound
 
 commands_no_channel = {'/channels': 0, '/help': 0, '/joined': 0, '/online': 0, '/quit': 0, '/nick': 1}

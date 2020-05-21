@@ -90,16 +90,12 @@ class ChatPage(Frame):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-        right_frame = Frame(container, width=220, height=340, bg="white", highlightbackground=bg, highlightthickness=10)
-        right_frame.pack(side="right", anchor="nw")
-        right_frame.pack_propagate(0)
-
-        left_frame = Frame(container, width=480, height=340, bg="white", highlightbackground=bg, highlightthickness=10)
+        left_frame = Frame(container, width=700, height=340, bg="white", highlightbackground=bg, highlightthickness=10)
         left_frame.pack(side="left", anchor="ne")
         left_frame.pack_propagate(0)
 
         scrollbar = Scrollbar(left_frame)
-        self.chat = Listbox(left_frame, height=10, width=50, font=("Courier", 8), yscrollcommand=scrollbar.set)
+        self.chat = Listbox(left_frame, height=10, width=80, font=("Courier", 8), yscrollcommand=scrollbar.set)
         scrollbar.pack(side=RIGHT, fill=Y)
         self.chat.pack(side=LEFT, fill=BOTH, expand=TRUE)
 
@@ -126,14 +122,28 @@ class ChatPage(Frame):
                 self.client.send_thread(parsed_mg)
                 _msg = msg.split(" ")
                 if _msg[0] == '/msg':
-                    self.chat.insert(END, "<to {}> {}".format(_msg[1], ' '.join(_msg[2:])) + "\n")
+                    self.receive_message("<to {}> {}".format(_msg[1], ' '.join(_msg[2:])) + "\n")
             else:
                 self.receive_message('Client: SYNTAX ERROR!!!')
             self.chat.see(END)
             self.input_field.delete(0, 'end')
 
     def receive_message(self, msg):
-        for _msg in msg.split('\n'):
+        formatted_msg = ""
+        msg_len = len(msg)
+
+        char_limit = 80
+        current = char_limit
+
+        if msg_len <= char_limit or '<SERVER>' in msg:
+            formatted_msg = msg
+        else:
+            while msg_len > char_limit:
+                formatted_msg += msg[current - char_limit:current] + '\n'
+                current += char_limit
+                msg_len -= char_limit
+
+        for _msg in formatted_msg.split('\n'):
             self.chat.insert(END, _msg + '\n')
             self.chat.see(END)
 

@@ -43,6 +43,7 @@ def leave_channel(user, channel_name, channels):
                         server_alert(_usr, [user.id, f'You are now the admin of {channel_name}'])
                         channels[channel_name].members.remove(user)
                         user.channel.remove(channel_name)
+                        return
     else:  # Case 3. If members
         server_alert(user, [channel_name, f'<{user.id} has left the channel>'])
         server_alert(user, ['SERVER', f'<You left {channel_name}>'])
@@ -196,8 +197,8 @@ def remove_operator(user, msg, channels, users):
 
 def quit_server(user, msg, channels, users):  # need to fix
     server_alert(user, ['SERVER', f'{user.id} has quit'])
-    for channel_name in user.channel:  # doesnt remove first channel..
-        leave_channel(user, channel_name, channels)
+    while len(user.channel) > 0:
+        leave_channel(user, user.channel[0], channels)
     users[user.id].connected = False
     del users[user.id]
 
