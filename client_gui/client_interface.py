@@ -119,7 +119,7 @@ class ChatPage(Frame):
         if len(msg) >= 1:
             check, parsed_mg = c.format_check(msg)
             if check:
-                self.client.send_thread(parsed_mg)
+                self.client.send_msg(parsed_mg)
                 _msg = msg.split(" ")
                 if _msg[0] == '/msg':
                     self.receive_message("<to {}> {}".format(_msg[1], ' '.join(_msg[2:])) + "\n")

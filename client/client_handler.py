@@ -45,21 +45,18 @@ class Client:
         send_buf(self.s, self.nickname)
 
         self.state = ThreadState()
-        self.t1 = threading.Thread(target=self.send_thread)
-        self.t2 = threading.Thread(target=self.recv_thread)
+        self.t1 = threading.Thread(target=self.recv_thread)
+        self.t1.start()
 
-        for t in [self.t1, self.t2]:
-            t.start()
-
-    def send_thread(self, _msg=None):
-        while self.state.running:
-            try:
-                if _msg:
-                    send_buf(self.s, _msg)
-                return
-            except:
-                self.state.running = False
-            time.sleep(5)
+    def send_msg(self, _msg=None):
+        try:
+            if _msg:
+                send_buf(self.s, _msg)
+            return
+        except Exception as e:
+            self.state.running = False
+            print("ERROR: ", e)
+            quit()
 
     def recv_thread(self):
         while self.state.running:
@@ -74,7 +71,6 @@ class Client:
 
     def stop_client(self):
         self.t1.join()
-        self.t2.join()
         self.s.close()
 
     def run(self):
@@ -82,7 +78,7 @@ class Client:
             msg = input()
             check, parsed_msg = format_check(msg)
             if check:
-                self.send_thread(parsed_msg)
+                self.send_msg(parsed_msg)
             else:
                 print('Client: SYNTAX ERROR!!!')
 
