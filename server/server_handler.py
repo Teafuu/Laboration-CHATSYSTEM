@@ -61,7 +61,7 @@ class Server:
         print('msg_list:', msg_list)
         if msg_list:
             if nick in self.users and user is not self.users[nick]:
-                if len(msg_list) > 1 and msg_list[0] == "/nick":
+                if len(msg_list) > 1 and msg_list[0] == "nick":
                     self.users[msg_list[1]] = user
                     user.id = msg_list[1]
                     send_buf(user.socket, "#SERVER you are connected!")
@@ -100,7 +100,7 @@ class Server:
 
             for nick in disconnected_users:
                 print('ALERT::{} disconnected'.format(nick))
-                self.users[nick].c.close()
+                self.users[nick].socket.close()
                 del self.users[nick]
 
     def ping_thread(self):

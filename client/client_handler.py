@@ -7,7 +7,7 @@ from utils.base import *
 from utils.config import *
 import socket, threading, time
 
-# import winsound
+import winsound
 
 commands_no_channel = {'/channels': 0, '/help': 0, '/joined': 0, '/online': 0, '/quit': 0, '/nick': 1}
 commands_channel = {'/join': 1, '/list': 1, '/part': 1, '/op': 2, '/unop': 2}
@@ -71,8 +71,8 @@ class Client:
         while self.state.running:
             msg = read_buf(self.s)
             if msg:
-                # winsound.Beep(100, 100)
-                # winsound.Beep(100, 200)
+                winsound.Beep(100, 100)
+                winsound.Beep(100, 200)
                 if self.interface:
                     self.interface.receive_message(msg)
                 else:
